@@ -242,7 +242,7 @@ children.push(rich([
 children.push(h1("1.  Introduction and Problem Statement"));
 children.push(body("Electricity cannot be stored cheaply at grid scale, so supply must be matched to demand continuously. Short-term load forecasting — predicting consumption from one hour to a few days ahead — is therefore a core operational problem for utilities, and an increasingly relevant one at the level of the individual building as rooftop solar, home batteries, and time-of-use tariffs push scheduling decisions toward the consumer."));
 children.push(body("Household-level forecasting is substantially harder than forecasting at substation or national scale. Aggregate demand curves are smooth because thousands of independent appliance events average out. A single household's load is dominated by a handful of discrete, high-draw events — an oven switching on, a washing machine entering its heating cycle — so the series is spiky, heavy-tailed, and only weakly stationary. A model that learns the daily rhythm well can still miss almost all of the variance that matters operationally, because that variance lives in the peaks."));
-children.push(body("This project asks a specific question: does a Transformer's self-attention mechanism capture the temporal structure of single-household demand well enough to beat the forecasts available for free? We take that comparison seriously, because it is the one most easily skipped. A model reporting an RMSE of 0.46 kW sounds precise in isolation; it is only meaningful once you know that simply repeating the previous hour's reading achieves 0.57 kW on the same data."));
+children.push(body("This project asks a specific question: does a Transformer's self-attention mechanism capture the temporal structure of single-household demand well enough to beat the forecasts available for free? We take that comparison seriously, because it is the one most easily skipped. A model reporting an RMSE of 0.45 kW sounds precise in isolation; it is only meaningful once you know that simply repeating the previous hour's reading achieves 0.57 kW on the same data."));
 
 children.push(h2("Contributions"));
 children.push(bullet("An encoder-only Transformer for multivariate one-hour-ahead household load forecasting, implemented in PyTorch with pre-norm encoder layers, sinusoidal positional encoding, and cyclical calendar features."));
@@ -316,7 +316,7 @@ children.push(table(
     ["Feed-forward dimension", "128", "2× d_model"],
     ["Dropout", "0.1", "Applied in encoder and head"],
     ["Normalization", "Pre-norm", "Stable without warmup [11]"],
-    ["Pooling", "Final time step", "Ablated against mean pooling"],
+    ["Pooling", "Final time step", "Last step attends over the full window"],
     ["Optimizer", "Adam, lr 1e-3", "Kingma and Ba [10]"],
     ["Loss", "MSE", "On standardized targets"],
   ],
@@ -330,7 +330,7 @@ children.push(body("Training minimizes mean squared error on standardized target
 children.push(body("Early stopping is not a formality here. Our interim 20-epoch run reached its best validation loss at epoch 9 and then deteriorated monotonically through epoch 20 while training loss continued to fall — a clean separation of the two curves and an unambiguous overfitting signature. The final run behaves as that experience predicted: validation loss bottoms out at 0.3161 at epoch 11, the schedule halves the learning rate as improvement stalls, and training halts at epoch 19 rather than spending eight further epochs overfitting. Figure 2 shows the final run's curves."));
 
 children.push(...figure("transformer_h1_loss_curve.png", 5.9,
-  "Figure 2: Training and validation loss against epoch for the final early-stopped run. Validation loss reaches its minimum at epoch 11 (dashed line); early stopping halts training at epoch 19, once eight epochs pass without improvement."));
+  "Figure 2: Training and validation loss against epoch for the final early-stopped run. Validation loss reaches its minimum at epoch 11 (marked); early stopping halts training at epoch 19, once eight epochs pass without improvement."));
 
 children.push(h2("5.1  Reproducibility"));
 children.push(body("Random seeds for Python, NumPy, PyTorch, CUDA, and DataLoader shuffling are fixed at 42 and exposed as a command-line argument. Every training run writes a JSON history recording its full argument set, dataset statistics, trainable parameter count, and per-epoch losses, so any number reported in this paper can be traced to the run that produced it. The repository README documents the exact sequence of commands required to reproduce every table and figure below."));
@@ -371,7 +371,7 @@ children.push(h2("7.1  Qualitative behaviour"));
 children.push(...figure("transformer_h1_actual_vs_predicted.png", 6.5,
   "Figure 4: Actual and predicted global active power over the first two weeks of the test period. The model tracks the diurnal cycle and the timing of demand events, but consistently under-shoots peak magnitude."));
 
-children.push(body("Figure 4 shows the model reproducing both the baseline load level and the timing of demand events, but systematically failing to reach peak magnitudes. Predicted maxima top out near 4.3 kW against observed maxima above 5.6 kW."));
+children.push(body("Figure 4 shows the model reproducing both the baseline load level and the timing of demand events, but systematically failing to reach peak magnitudes. Within the two weeks plotted, the highest observed hour reaches 3.77 kW against a predicted 2.57 kW. The same shortfall holds across the full test period, where predicted maxima top out at 4.27 kW against observed maxima of 5.63 kW."));
 
 children.push(h2("7.2  Error analysis"));
 children.push(...figure("transformer_h1_error_distribution.png", 6.5,

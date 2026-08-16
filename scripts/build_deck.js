@@ -408,10 +408,10 @@ s.addNotes(
   "So the final training loop earns this slide: Adam with MSE on standardized " +
   "targets, gradient clipping, a scheduler that halves the learning rate after " +
   "three stalled epochs, and early stopping with patience eight. In the run " +
-  "you're looking at, validation bottomed at epoch eleven at 0.316, the " +
-  "learning-rate cuts are visible as steps in the curve, and training halted " +
-  "at nineteen instead of wasting eight more epochs memorizing the training " +
-  "set. The checkpoint we evaluate — and demo — is the epoch-eleven one."
+  "you're looking at, validation bottomed at epoch eleven at 0.316 — that's the " +
+  "marked point — and training halted at nineteen instead of wasting eight more " +
+  "epochs memorizing the training set. The checkpoint we evaluate — and demo — " +
+  "is the epoch-eleven one."
 );
 
 // ---------------------------------------------------------------- 8  Evaluation
@@ -553,13 +553,15 @@ s.addNotes(
 s = pres.addSlide();
 titleOf(s, "Where the Model Still Struggles");
 
+// Stacked, not overlapping: 1.42 + 3.01 = 4.43, so the lower figure starts at
+// 4.55 and ends at 7.27, inside the 7.5" slide.
 s.addImage({
   path: path.join(FIG, "transformer_h1_actual_vs_predicted.png"),
-  x: M, y: 1.5, w: 8.0, h: 8.0 * 0.4421,
+  x: M, y: 1.42, w: 6.8, h: 6.8 * 0.4421,
 });
 s.addImage({
   path: path.join(FIG, "transformer_h1_error_distribution.png"),
-  x: M, y: 4.15, w: 8.0, h: 8.0 * 0.40,
+  x: M, y: 4.55, w: 6.8, h: 6.8 * 0.40,
 });
 
 card(s, { x: 8.9, y: 1.5, w: 3.8, h: 4.5, fill: "FDF0E1" });
@@ -569,7 +571,8 @@ s.addText("Peak under-prediction", {
 });
 s.addText(
   "The model tracks the daily cycle and event timing, but consistently under-shoots " +
-  "peak magnitude — predicted maxima reach 4.3 kW against observed 5.6 kW.\n\n" +
+  "peak magnitude — across the test period predicted maxima reach 4.27 kW against " +
+  "observed 5.63 kW.\n\n" +
   "Residuals are right-skewed; the scatter falls below the diagonal at high load.\n\n" +
   "This is rational under MSE. A confident spike that lands an hour off is punished " +
   "twice — missed peak plus false peak — so hedging toward the mean is optimal " +
@@ -585,8 +588,9 @@ s.addNotes(
   "SCRIPT:\n" +
   "Now the honest part — where the model still struggles. Look at the traces: " +
   "it tracks the daily cycle and the timing of demand events well, but it " +
-  "consistently under-shoots peak height — predicted maxima around 4.3 " +
-  "kilowatts against observed peaks above 5.6. The residuals are right-skewed, " +
+  "consistently under-shoots peak height. In the two weeks on screen the tallest " +
+  "actual hour reaches 3.8 kilowatts and we predict 2.6; across the whole test " +
+  "period it is 5.6 against 4.3. The residuals are right-skewed, " +
   "and the scatter falls below the diagonal at high load. Every diagnostic " +
   "points the same way: the model hedges toward the mean when demand is high.\n" +
   "Here's the key point: that is rational behaviour under squared error, not a " +

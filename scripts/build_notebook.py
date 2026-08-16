@@ -16,7 +16,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def md(text: str) -> dict:
-    return {"cell_type": "markdown", "metadata": {}, "source": text.strip().split("\n")}
+    # nbformat concatenates `source` with no separator, so each line must keep
+    # its own newline. Splitting without keepends fuses the cell into one line.
+    return {
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": text.strip().splitlines(keepends=True),
+    }
 
 
 def code(text: str) -> dict:
@@ -25,7 +31,7 @@ def code(text: str) -> dict:
         "execution_count": None,
         "metadata": {},
         "outputs": [],
-        "source": text.strip("\n").split("\n"),
+        "source": text.strip("\n").splitlines(keepends=True),
     }
 
 
@@ -219,7 +225,7 @@ Image(str(ROOT / "figures" / "transformer_h1_loss_curve.png"))
 ## 5. Evaluation
 
 Metrics alone do not establish that a deep model is worth its complexity. A model
-reporting RMSE of 0.46 kW sounds precise until you learn that repeating the
+reporting RMSE of 0.45 kW sounds precise until you learn that repeating the
 previous hour's reading gets 0.57 kW for free.
 
 We therefore evaluate against three reference forecasters:
@@ -314,6 +320,9 @@ NOTEBOOK = {
 def main() -> None:
     out = ROOT / "notebooks" / "transformer_forecasting.ipynb"
     out.parent.mkdir(exist_ok=True)
+    # nbformat 4.5 requires a cell id; index-derived so regeneration stays stable.
+    for i, cell in enumerate(CELLS):
+        cell["id"] = f"cell-{i:02d}"
     out.write_text(json.dumps(NOTEBOOK, indent=1))
     n_md = sum(1 for c in CELLS if c["cell_type"] == "markdown")
     print(f"Wrote {out} ({len(CELLS)} cells, {n_md} markdown)")
