@@ -127,6 +127,15 @@ def load_fallback_predictions():
     return pd.read_csv(MODELS_DIR / "test_predictions.csv")
 
 
+@st.cache_data
+def load_run_predictions(run_name: str):
+    """Prefer the selected run's predictions; fall back to the interim CSV."""
+    run_csv = ROOT / "results" / f"{run_name}_predictions.csv"
+    if run_csv.exists():
+        return pd.read_csv(run_csv)
+    return load_fallback_predictions()
+
+
 # --------------------------------------------------------------------------- #
 # UI
 # --------------------------------------------------------------------------- #
@@ -229,7 +238,7 @@ with tab_forecast:
 # Performance tab
 # --------------------------------------------------------------------------- #
 with tab_metrics:
-    predictions = load_fallback_predictions()
+    predictions = load_run_predictions(run_name)
     actual = predictions["Actual"].to_numpy()
     predicted = predictions["Predicted"].to_numpy()
 
