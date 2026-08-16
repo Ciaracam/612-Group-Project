@@ -80,7 +80,8 @@ function figure(file, widthIn, caps) {
     return [body(`[MISSING FIGURE: ${file} — run the figure scripts]`)];
   }
   const buf = fs.readFileSync(p);
-  // Preserve aspect ratio from the known render sizes.
+  // Preserve aspect ratio from the known render sizes. Matched by suffix so
+  // run-prefixed filenames (transformer_h1_loss_curve.png) resolve too.
   const ratios = {
     "architecture.png": 9.4 / 14.5,
     "loss_curve.png": 4.2 / 7.5,
@@ -88,7 +89,8 @@ function figure(file, widthIn, caps) {
     "baseline_comparison.png": 5.2 / 8.5,
     "error_distribution.png": 4.0 / 10.0,
   };
-  const ratio = ratios[file] ?? 0.5;
+  const key = Object.keys(ratios).find((k) => file.endsWith(k));
+  const ratio = key ? ratios[key] : 0.5;
   return [
     new Paragraph({
       alignment: AlignmentType.CENTER,
