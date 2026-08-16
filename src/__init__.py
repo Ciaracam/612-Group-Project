@@ -1,0 +1,3 @@
+"""Transformer-based household electricity consumption forecasting."""
+
+__version__ = "1.0.0"
