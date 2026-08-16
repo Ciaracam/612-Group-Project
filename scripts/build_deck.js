@@ -133,7 +133,7 @@ s.addNotes(
 // ---------------------------------------------------------------- 2  Problem
 
 s = pres.addSlide();
-titleOf(s, "The Problem", "Why household-level load forecasting is hard");
+titleOf(s, "Introduction — The Problem", "Why household-level load forecasting is hard");
 
 bullets(s, [
   "Electricity cannot be stored cheaply at grid scale — supply must match demand continuously.",
@@ -266,7 +266,7 @@ s.addNotes("4:45–5:15. Move fast. One rubric point; do not dwell.");
 // ---------------------------------------------------------------- 6  Architecture
 
 s = pres.addSlide();
-s.addText("Architecture", {
+s.addText("Architecture Diagram", {
   x: M, y: 0.18, w: W - 2 * M, h: 0.55,
   fontSize: 28, bold: true, color: INK, fontFace: HEAD, margin: 0,
 });
@@ -543,7 +543,7 @@ s.addNotes(
 // ---------------------------------------------------------------- 13  Limitations
 
 s = pres.addSlide();
-titleOf(s, "Limitations and Future Work");
+titleOf(s, "Limitations and Future Scope");
 
 card(s, { x: M, y: 1.65, w: 5.9, h: 4.95, fill: PALE });
 s.addText("Limitations", {
