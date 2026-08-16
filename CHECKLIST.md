@@ -1,45 +1,45 @@
 # Remaining work before Wednesday 19 August
 
-Everything not listed here is done. These four items need your machine and the raw
-dataset, which is why they are not already complete.
+Status as of Saturday 16 August. Items 1–3 are **done**; the numbers below are
+from the final verified run. What remains is rehearsal and submission logistics.
 
-## 1. Train the final model  (Monday — do this first, everything else waits on it)
+## 1. Train the final model — DONE
 
     python -m src.train --run-name transformer_h1
     python -m src.evaluate --run-name transformer_h1
 
-The training code adds early stopping, an LR schedule, and 7 calendar features
-that the interim run did not have, so **the numbers will change** — very likely
-for the better. Runtime is roughly 8-12 min on CPU.
+Final run (early stop at epoch 19, best epoch 11):
+**MAE 0.3062 / RMSE 0.4494 / R² 0.589 / 21.8% RMSE reduction vs. persistence.**
 
-## 2. Update the reported numbers
+Two things to know about these numbers:
 
-Every number currently in the report and deck comes from the verified interim run
-(MAE 0.3208 / RMSE 0.4643 / R² 0.561 / 19.2% skill). After step 1, replace them in:
+- A leakage bug was fixed first: hourly gap interpolation ran *before* the
+  chronological split, letting adjacent splits inform each other (the same
+  defect PR #1 found in the notebook). The number is clean now.
+- The Hyperopt configuration from PR #1 was retrained as a control
+  (`transformer_h1_tuned`: MAE 0.3136 / RMSE 0.4604). It loses to the defaults
+  here because it was tuned against the old pipeline without calendar features.
 
-- `report/final_report.docx` — abstract, Table 3, Section 7 prose, conclusion
-- `presentation/MSML612_final_presentation.pptx` — slides 7 and 9
-- `README.md` — the results table
+## 2. Update the reported numbers — DONE
 
-`src/evaluate.py` prints the full comparison table and writes
-`results/transformer_h1_metrics.json`, so this is copy-paste, not recomputation.
-Also swap in the regenerated `figures/transformer_h1_loss_curve.png`.
+README, report (abstract, Table 3, Section 7, discussion, conclusion), and deck
+(slides 7 and 9) all rebuilt from the run above. Figure 2 is now the final run's
+loss curve (`figures/transformer_h1_loss_curve.png`). The report and deck are
+generated — edit `scripts/build_report.js` / `scripts/build_deck.js` and run
+`npm run build`; never hand-edit the .docx/.pptx.
 
-## 3. Run the ablations
+## 3. Run the ablations — DONE
 
     python -m src.ablation --group all --epochs 40
 
-Paste `results/ablation_results.md` into Table 4 of the report and slide 12, then
-write 1-2 sentences interpreting it. **If time is short, run `--group features`
-and `--group architecture` first** — those two produce the most quotable
-comparisons (calendar features on/off, and Transformer vs. LSTM control).
+Results are in `results/ablation_results.md`, pasted into Table 4 and slide 12.
 
-If the runs are not finished by Wednesday, delete slide 12 rather than presenting
-a table of dashes.
-
-## 4. Demo rehearsal
+## 4. Demo rehearsal — still to do
 
     streamlit run demo/app.py
+
+Verified working live (forecasts from the new checkpoint; Performance tab now
+follows the selected run). For the presentation:
 
 - Have it already running before you present; do not launch it live.
 - Show two forecasts: one calm overnight hour, one evening peak. Owning the peak
@@ -49,10 +49,12 @@ a table of dashes.
 
 ## Also worth doing
 
-- [ ] Confirm the repo is public and push everything.
-- [ ] Delete the four `ACTION REQUIRED` callouts in the report once addressed.
+- [x] Confirm the repo is public and push everything.
+- [x] Delete the four `ACTION REQUIRED` callouts in the report once addressed.
 - [ ] Proofread pass by whoever did not write it.
-- [ ] Export the report to PDF alongside the .docx.
+- [ ] Export the report AND deck to PDF on a machine with Office (the stale
+      deck PDF was removed — this machine has no PowerPoint to re-export;
+      open the rebuilt .pptx/.docx and Save As PDF after the final rebuild).
 - [ ] Assign speaking parts (suggested: intro+data / solution+architecture / results+demo).
 
 ## Speaker notes

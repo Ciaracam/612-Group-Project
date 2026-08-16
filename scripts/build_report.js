@@ -386,27 +386,27 @@ children.push(body("Each row of Table 4 is an independent train-and-evaluate cyc
 children.push(table(
   ["Study", "Configuration", "Params", "MAE (kW)", "RMSE (kW)", "R²"],
   [
-    ["Window", "L = 24", "—", "—", "—", "—"],
-    ["Window", "L = 48", "—", "—", "—", "—"],
-    ["Window", "L = 168", "—", "—", "—", "—"],
-    ["Capacity", "d=64, 2 layers", "—", "—", "—", "—"],
-    ["Capacity", "d=64, 4 layers", "—", "—", "—", "—"],
-    ["Capacity", "d=128, 2 layers", "—", "—", "—", "—"],
-    ["Positional", "Sinusoidal", "—", "—", "—", "—"],
-    ["Positional", "Learnable", "—", "—", "—", "—"],
-    ["Positional", "None", "—", "—", "—", "—"],
-    ["Features", "With calendar", "—", "—", "—", "—"],
-    ["Features", "Without calendar", "—", "—", "—", "—"],
-    ["Architecture", "Transformer", "—", "—", "—", "—"],
-    ["Architecture", "LSTM control", "—", "—", "—", "—"],
+    ["Window", "L = 24 (final)", "67,969", "0.3062", "0.4494", "0.589"],
+    ["Window", "L = 48", "67,969", "0.3090", "0.4543", "0.580"],
+    ["Window", "L = 168", "67,969", "0.3076", "0.4553", "0.582"],
+    ["Capacity", "d=64, 2 layers (final)", "67,969", "0.3062", "0.4494", "0.589"],
+    ["Capacity", "d=64, 4 layers", "134,913", "0.3143", "0.4539", "0.580"],
+    ["Capacity", "d=128, 2 layers", "267,009", "0.3174", "0.4560", "0.576"],
+    ["Positional", "Sinusoidal (final)", "67,969", "0.3062", "0.4494", "0.589"],
+    ["Positional", "Learnable", "387,969", "0.3211", "0.4573", "0.574"],
+    ["Positional", "None", "67,969", "0.3118", "0.4542", "0.580"],
+    ["Features", "With calendar (final)", "67,969", "0.3062", "0.4494", "0.589"],
+    ["Features", "Without calendar", "67,521", "0.3097", "0.4617", "0.566"],
+    ["Architecture", "Transformer (final)", "67,969", "0.3062", "0.4494", "0.589"],
+    ["Architecture", "LSTM control", "53,825", "0.3199", "0.4579", "0.573"],
   ],
   [1500, 2400, 1200, 1500, 1560, 1200],
+  { boldRows: [0, 3, 6, 9, 11], shadeRows: [0, 3, 6, 9, 11] },
 ));
-children.push(caption("Table 4: Ablation results."));
+children.push(caption("Table 4: Ablation results. Each study varies one decision against the final configuration, which appears once per study as the shaded row; its numbers are identical everywhere because runs are fully seeded."));
 
-children.push(todo("Run `python -m src.ablation --group all --epochs 40` and paste the contents of results/ablation_results.md into Table 4. This table is worth substantial credit under 'difficulty of NN design' — it is the evidence that the architecture was chosen rather than assumed. If time is short, run the 'features' and 'architecture' groups first: they produce the two most quotable comparisons."));
-
-children.push(todo("Add one or two sentences after Table 4 interpreting the results — which design choices mattered, which did not, and whether anything surprised you. Graders read the interpretation, not the numbers."));
+children.push(body("Three results carry the table. The calendar features matter most: removing them costs more RMSE than any architectural change (0.4494 to 0.4617), even though the model could in principle recover the same information from the positional structure of the window. Second, more capacity only hurts — doubling depth or width degrades RMSE while multiplying parameters, confirming that at 34,000 training hours the binding constraint is data, not expressiveness. Third, the Transformer beats the parameter-matched LSTM control (RMSE 0.4494 vs. 0.4579, skill 21.8% vs. 20.3%) — a real but modest margin that is consistent with attention helping most at the event transitions the error analysis identified."));
+children.push(body("Two smaller observations: extending the window past one daily cycle adds nothing (L = 48 and L = 168 both underperform L = 24), and fixed sinusoidal encodings beat learnable ones, which overfit — the learnable variant adds 320,000 parameters and peaks five epochs earlier. Notably, every configuration in the table still beats persistence by at least 19.6%, so the headline claim is robust to any of these design choices; the ablations tune the margin, not the conclusion."));
 
 // ---- 8 Discussion
 children.push(h1("8.  Discussion"));

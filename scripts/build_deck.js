@@ -125,9 +125,14 @@ s.addText("MSML612 — Deep Learning   |   Final Project   |   August 2026", {
   fontSize: 13, color: "8FA6BA", fontFace: BODY, margin: 0,
 });
 s.addNotes(
-  "0:00–0:30. Introduce team and topic. One line: we forecast household electricity " +
-  "demand one hour ahead using a Transformer, and we test it against the forecasts " +
-  "you get for free."
+  "0:00–0:30 · SPEAKER 1 (suggested: intro + data)\n" +
+  "CUE: Introduce team and topic in one line.\n\n" +
+  "SCRIPT:\n" +
+  "Good evening — we're William, Ciara, and Chris, and our project is forecasting " +
+  "household electricity demand one hour ahead with a Transformer. The one-line " +
+  "version: deep models in forecasting are often never compared to the forecast " +
+  "you get for free — so we built that comparison in from the start, and we'll " +
+  "show you a live demo of the model beating it."
 );
 
 // ---------------------------------------------------------------- 2  Problem
@@ -158,9 +163,23 @@ statCard(s, { x: 8.1, y: 4.62, w: 2.2, value: "2.08M", label: "raw minute-level 
 statCard(s, { x: 10.5, y: 4.62, w: 2.2, value: "4 yrs", label: "of continuous metering" });
 
 s.addNotes(
-  "0:30–1:45. Emphasise the aggregate-vs-household distinction — this is why the " +
-  "problem is hard and why our R² is not 0.95. Land the framing question: the bar " +
-  "is not 'low error', it is 'better than free'."
+  "0:30–1:45 · SPEAKER 1\n" +
+  "CUE: Aggregate-vs-household is why this is hard and why R² is not 0.95. Land " +
+  "the framing question: the bar is 'better than free', not 'low error'.\n\n" +
+  "SCRIPT:\n" +
+  "Why is this hard? Electricity can't be stored cheaply at grid scale, so " +
+  "supply has to match demand continuously — that's why short-term load " +
+  "forecasting drives generation scheduling, demand response, and battery " +
+  "dispatch. But there's a scale problem. National demand curves are smooth, " +
+  "because millions of appliance events average out. One household is the " +
+  "opposite: the series is spiky and heavy-tailed, dominated by a handful of " +
+  "discrete events — an oven, a washing machine, a water heater. The variance " +
+  "that matters operationally lives in those peaks, not in the daily rhythm.\n" +
+  "So our question is deliberately narrow: does self-attention capture enough " +
+  "structure in a single household's demand to beat the forecasts available for " +
+  "free? Four years of minute-level data, two million readings — and the bar is " +
+  "not 'low error'. The bar is 'better than free', because a model that can't " +
+  "clear that bar has no reason to exist."
 );
 
 // ---------------------------------------------------------------- 3  Data
@@ -194,9 +213,27 @@ s.addText(
 );
 
 s.addNotes(
-  "1:45–3:15. Walk the five steps quickly. Spend your time on the amber box — the " +
-  "chronological split and train-only scaling are the two methodology points a " +
-  "grader will probe. Expect a question here."
+  "1:45–3:15 · SPEAKER 1\n" +
+  "CUE: Walk the pipeline quickly; spend the time on the split/scaling box — " +
+  "that is what a grader will probe. Expect a question here.\n\n" +
+  "SCRIPT:\n" +
+  "The data is the UCI Individual Household Electric Power Consumption set: one " +
+  "house near Paris, December 2006 to November 2010, seven electrical " +
+  "measurements every minute. About one and a quarter percent of rows have " +
+  "missing values, marked with question marks.\n" +
+  "The pipeline: parse timestamps, resample to hourly means — which absorbs " +
+  "most minute-level gaps and cuts two million rows to thirty-five thousand " +
+  "hours — then add seven calendar features: sine-cosine encodings of hour, " +
+  "day-of-week, and month, plus a weekend flag. Sine-cosine because hour 23 and " +
+  "hour 0 are neighbours in reality, and an integer encoding would put them at " +
+  "opposite ends.\n" +
+  "Three methodology points we were strict about. The split is chronological — " +
+  "never shuffled — because neighbouring hours are nearly identical, and a " +
+  "shuffled split grades interpolation, not forecasting. Scalers are fit on the " +
+  "training split only. And gap interpolation runs after the split, separately " +
+  "per split — run it before, and hours next to the boundary get filled using " +
+  "data from the other side. We actually caught that one in our own pipeline " +
+  "and fixed it; the numbers you'll see are from the clean run."
 );
 
 // ---------------------------------------------------------------- 4  Solution
@@ -229,9 +266,26 @@ solutions.forEach((sol, i) => {
 });
 
 s.addNotes(
-  "3:15–4:45. This is the novelty slide — 3 rubric points. Do not just say 'we used " +
-  "a Transformer'. The argument is: attention suits this data for a specific reason, " +
-  "and we built an evaluation that could have proven us wrong."
+  "3:15–4:45 · SPEAKER 2 (suggested: solution + architecture)\n" +
+  "CUE: The novelty slide — 3 rubric points. Not 'we used a Transformer'; the " +
+  "argument is attention fits this data for a specific reason, and the " +
+  "evaluation could have proven us wrong.\n\n" +
+  "SCRIPT:\n" +
+  "Our solution has two halves, and the second is as deliberate as the first.\n" +
+  "The model is an encoder-only Transformer. Why attention for this data? In a " +
+  "recurrent model, information from the far end of the input window reaches " +
+  "the prediction only after passing through twenty-three sequential state " +
+  "updates, decaying at each step. Attention connects any two hours in one " +
+  "step. That matters here because the most informative context is often not " +
+  "the last hour — it's the same hour yesterday, or the same hour last " +
+  "weekend. Attention can put weight directly on those distant positions.\n" +
+  "The second half is the evaluation. We committed upfront to three reference " +
+  "forecasters — persistence, seasonal naive, and the mean — plus an LSTM " +
+  "control with matched parameters, and ablations over every design choice " +
+  "you'll see on the architecture slide. The literature is full of Transformer " +
+  "results that evaporate against simple baselines — Zeng et al. showed that " +
+  "in 2023. So we designed the evaluation to be falsifiable: if attention " +
+  "wasn't earning its complexity here, this setup would have said so."
 );
 
 // ---------------------------------------------------------------- 5  Tools
@@ -261,7 +315,16 @@ tools.forEach((t, i) => {
   });
 });
 
-s.addNotes("4:45–5:15. Move fast. One rubric point; do not dwell.");
+s.addNotes(
+  "4:45–5:15 · SPEAKER 2\n" +
+  "CUE: Move fast. One rubric point; do not dwell.\n\n" +
+  "SCRIPT:\n" +
+  "Quickly on tooling: PyTorch for the model and training loop, pandas and " +
+  "scikit-learn for the pipeline, matplotlib for figures, and Streamlit for " +
+  "the live demo you'll see in a few minutes. Everything is seeded and pinned, " +
+  "every training run writes a history file, and the whole repo reproduces " +
+  "from two commands — train, evaluate."
+);
 
 // ---------------------------------------------------------------- 6  Architecture
 
@@ -276,10 +339,29 @@ s.addImage({
   x: 1.79, y: 0.9, w: 9.72, h: 6.3,
 });
 s.addNotes(
-  "5:15–7:00. Two rubric points — the highest-value slide per second. Trace the " +
-  "path out loud: 14 features in, projected to 64 dimensions, positional encoding, " +
-  "two encoder layers, pool the final time step, linear head. Call out the tensor " +
-  "shapes; they show you understand the data flow, not just the diagram."
+  "5:15–7:00 · SPEAKER 2\n" +
+  "CUE: Two rubric points — highest-value slide per second. Trace the path out " +
+  "loud, call out tensor shapes: they show you understand the data flow, not " +
+  "just the diagram.\n\n" +
+  "SCRIPT:\n" +
+  "Let me trace one batch through the diagram, with shapes.\n" +
+  "Input: a window of 24 hours by 14 features — seven measured, seven " +
+  "calendar. A linear projection lifts each hour to 64 dimensions, so the " +
+  "tensor is batch by 24 by 64. Attention is permutation-invariant — it has no " +
+  "idea hour one comes before hour two — so we add fixed sinusoidal positional " +
+  "encodings; same shape.\n" +
+  "Then two encoder layers. Each has four attention heads — sixteen dimensions " +
+  "per head — a 128-unit feed-forward, and dropout of 0.1. One detail that " +
+  "matters: layer norm goes before each sublayer, not after — pre-norm, from " +
+  "Xiong et al. — which keeps gradients well-conditioned without a warmup " +
+  "schedule.\n" +
+  "Out of the encoder: still batch by 24 by 64. We pool by taking the final " +
+  "time step — batch by 64 — then dropout and a linear head to a single " +
+  "number: next hour's load in standardized units, inverted back to kilowatts " +
+  "for every metric you'll see.\n" +
+  "Total: sixty-eight thousand trainable parameters. That's small on purpose — " +
+  "with thirty-four thousand training hours, a big model overfits long before " +
+  "it underfits, and the capacity ablation confirms it."
 );
 
 // ---------------------------------------------------------------- 7  Training
@@ -313,9 +395,23 @@ bullets(s, [
 ], { x: 8.4, y: 4.15, w: 4.3, h: 2.0, fontSize: 12.5, spaceAfter: 7 });
 
 s.addNotes(
-  "7:00–8:15. REQUIRED PLOT — say the words 'training and validation loss versus " +
-  "epoch' out loud. The overfitting story is a strength: we diagnosed it from the " +
-  "interim curve and fixed it; this figure is the final early-stopped run."
+  "7:00–8:15 · SPEAKER 2\n" +
+  "CUE: REQUIRED PLOT — say 'training and validation loss versus epoch' out " +
+  "loud. The overfitting story is a strength: diagnosed on the interim curve, " +
+  "fixed in the final run shown here.\n\n" +
+  "SCRIPT:\n" +
+  "This is our training and validation loss versus epoch — the required plot — " +
+  "and it has a story. Our interim run trained a fixed twenty epochs. " +
+  "Validation loss bottomed out at epoch nine and then climbed for eleven " +
+  "epochs while training loss kept falling — textbook overfitting, visible " +
+  "right there in the curve.\n" +
+  "So the final training loop earns this slide: Adam with MSE on standardized " +
+  "targets, gradient clipping, a scheduler that halves the learning rate after " +
+  "three stalled epochs, and early stopping with patience eight. In the run " +
+  "you're looking at, validation bottomed at epoch eleven at 0.316, the " +
+  "learning-rate cuts are visible as steps in the curve, and training halted " +
+  "at nineteen instead of wasting eight more epochs memorizing the training " +
+  "set. The checkpoint we evaluate — and demo — is the epoch-eleven one."
 );
 
 // ---------------------------------------------------------------- 8  Evaluation
@@ -354,9 +450,21 @@ s.addText(
 );
 
 s.addNotes(
-  "8:15–9:15. Make the case that this is the honest way to evaluate. Reference " +
-  "Zeng et al. 2023 if asked why we bothered — reported Transformer gains often " +
-  "vanish against simple baselines."
+  "8:15–9:15 · SPEAKER 3 (suggested: results + demo)\n" +
+  "CUE: Make the case that this is the honest way to evaluate. Zeng et al. " +
+  "2023 if asked why we bothered.\n\n" +
+  "SCRIPT:\n" +
+  "Before the numbers, the rules. Every prediction is inverse-transformed back " +
+  "to kilowatts, so every error you'll see is in physical units. We report " +
+  "MAE, RMSE, and R² — MAE and RMSE together, because their gap tells you " +
+  "whether the error is spread evenly or concentrated in a few big misses.\n" +
+  "And we compare against three forecasters that cost nothing. Persistence: " +
+  "predict the previous hour — for hourly load, that's a genuinely strong " +
+  "baseline. Seasonal naive: predict the same hour yesterday. And the series " +
+  "mean, which is the R-squared-equals-zero floor. Our headline metric is the " +
+  "skill score — the percentage RMSE reduction against persistence. If a deep " +
+  "model can't beat the previous hour repeated, it has no business being " +
+  "deployed. That's the bar."
 );
 
 // ---------------------------------------------------------------- 9  Results
@@ -421,9 +529,23 @@ s.addImage({
 });
 
 s.addNotes(
-  "9:15–10:30. Lead with 21.8%. The negative-R² observation for seasonal naive is " +
-  "your best 'we actually looked at this' moment — it shows the daily cycle is not " +
-  "sufficient at household scale."
+  "9:15–10:30 · SPEAKER 3\n" +
+  "CUE: Lead with 21.8%. The negative-R² observation for seasonal naive is " +
+  "your best 'we actually looked at this' moment.\n\n" +
+  "SCRIPT:\n" +
+  "The headline: a 21.8 percent RMSE reduction over naive persistence, on five " +
+  "thousand one hundred sixty-five held-out predictions the model never saw in " +
+  "training. MAE 0.306 kilowatts, RMSE 0.449, R² 0.589 — better than every " +
+  "reference forecaster on every metric.\n" +
+  "Two things in this table are worth a second look. First, seasonal naive — " +
+  "repeat yesterday's same hour — is worse than just predicting the mean. " +
+  "Negative R². One household's routine varies too much day to day for " +
+  "yesterday's 7 p.m. to predict tonight's. The daily cycle you can see by eye " +
+  "is not, by itself, predictive at this scale.\n" +
+  "Second, our margin over persistence is bigger in RMSE — 21.8 percent — than " +
+  "in MAE — 17.8. RMSE weights big errors more, so the model's advantage is " +
+  "concentrated exactly where persistence fails worst: the transitions into " +
+  "and out of demand peaks, where the previous hour tells you least."
 );
 
 // ---------------------------------------------------------------- 10  Qualitative
@@ -457,9 +579,24 @@ s.addText(
 );
 
 s.addNotes(
-  "10:30–11:30. This slide is your defence against 'why is R² only 0.59?'. The " +
-  "answer is that MSE makes hedging optimal, and the fix is a quantile loss — not " +
-  "a bigger model. Say that explicitly."
+  "10:30–11:30 · SPEAKER 3\n" +
+  "CUE: The defence against 'why is R² only 0.59?'. MSE makes hedging optimal; " +
+  "the fix is a quantile loss, not a bigger model. Say that explicitly.\n\n" +
+  "SCRIPT:\n" +
+  "Now the honest part — where the model still struggles. Look at the traces: " +
+  "it tracks the daily cycle and the timing of demand events well, but it " +
+  "consistently under-shoots peak height — predicted maxima around 4.3 " +
+  "kilowatts against observed peaks above 5.6. The residuals are right-skewed, " +
+  "and the scatter falls below the diagonal at high load. Every diagnostic " +
+  "points the same way: the model hedges toward the mean when demand is high.\n" +
+  "Here's the key point: that is rational behaviour under squared error, not a " +
+  "capacity failure. A confident peak prediction that lands an hour early gets " +
+  "punished twice — once for the missed peak, once for the false one. Hedging " +
+  "gets punished moderately either way. So MSE makes shrinking toward the mean " +
+  "optimal exactly where the data is most volatile. The fix isn't a bigger " +
+  "model — it's a quantile loss that can express uncertainty about peaks. " +
+  "That's our top-listed future work, and you'll see the behaviour live in " +
+  "the demo right now."
 );
 
 // ---------------------------------------------------------------- 11  Demo
@@ -485,10 +622,25 @@ bullets(s, [
 ], { x: 1.0, y: 4.85, w: 11.3, h: 1.5, fontSize: 14, color: "C9D8E4", spaceAfter: 8 });
 
 s.addNotes(
-  "11:30–14:00. REQUIRED — 3 rubric points. Have the app already running before " +
-  "you start presenting; do not launch it live. Show two forecasts: one on a calm " +
-  "overnight hour, one on an evening peak, so the peak weakness is visible and you " +
-  "own it rather than hiding it. Fallback video ready if anything fails."
+  "11:30–14:00 · SPEAKER 3\n" +
+  "CUE: REQUIRED — 3 rubric points. App already running before the talk starts; " +
+  "never launch live. Two forecasts: calm overnight hour, then evening peak — " +
+  "own the weakness. Fallback video ready.\n\n" +
+  "SCRIPT (alt-tab to the browser):\n" +
+  "This is the model you just saw evaluated, running live — the epoch-eleven " +
+  "checkpoint, forecasting from the held-out test period. I pick any moment " +
+  "with this slider; the model sees only the preceding 24 hours.\n" +
+  "First, a quiet overnight hour. [Set slider to a pre-chosen 3 a.m. origin.] " +
+  "Prediction, actual, absolute error — a few hundredths of a kilowatt. Routine " +
+  "load, and the model nails it.\n" +
+  "Now the hard case — an evening peak. [Set slider to the pre-chosen origin.] " +
+  "You can see exactly what the error analysis predicted: timing right, " +
+  "magnitude short. We're showing you the failure mode on purpose — it's " +
+  "systematic, we understand why it happens, and we know what fixes it.\n" +
+  "[Optional if time: Performance tab — the live-computed table matches slide " +
+  "9.] [Alt-tab back to the deck.]\n" +
+  "REHEARSAL NOTE: choose and write down both slider origins beforehand; do " +
+  "not hunt for good examples live."
 );
 
 // ---------------------------------------------------------------- 12  Ablations
@@ -499,45 +651,67 @@ titleOf(s, "Ablations", "Every row is an independent train-and-evaluate cycle");
 const ablRows = [
   [
     { text: "Study", options: { bold: true, color: INK } },
-    { text: "Configuration", options: { bold: true, color: INK } },
-    { text: "MAE", options: { bold: true, color: INK, align: "center" } },
+    { text: "Final choice", options: { bold: true, color: INK } },
     { text: "RMSE", options: { bold: true, color: INK, align: "center" } },
-    { text: "R²", options: { bold: true, color: INK, align: "center" } },
+    { text: "Alternatives", options: { bold: true, color: INK } },
+    { text: "RMSE", options: { bold: true, color: INK, align: "center" } },
   ],
-  ["Window", "24 / 48 / 168 hours", "—", "—", "—"],
-  ["Capacity", "d=64 L2 / d=64 L4 / d=128 L2", "—", "—", "—"],
-  ["Positional", "Sinusoidal / learnable / none", "—", "—", "—"],
-  ["Features", "With vs. without calendar", "—", "—", "—"],
-  ["Architecture", "Transformer vs. LSTM control", "—", "—", "—"],
+  ["Window", { text: "24 hours", options: { bold: true } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    "48 h / 168 h", { text: "0.4543 / 0.4553", options: { align: "center" } }],
+  ["Capacity", { text: "d=64, 2 layers", options: { bold: true } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    "2× depth / 2× width", { text: "0.4539 / 0.4560", options: { align: "center" } }],
+  ["Positional", { text: "Sinusoidal", options: { bold: true } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    "Learnable / none", { text: "0.4573 / 0.4542", options: { align: "center" } }],
+  ["Features", { text: "With calendar", options: { bold: true } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    "Without calendar", { text: "0.4617", options: { align: "center" } }],
+  ["Architecture", { text: "Transformer", options: { bold: true } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    "LSTM control", { text: "0.4579", options: { align: "center" } }],
 ];
 
 s.addTable(ablRows, {
   x: M, y: 1.7, w: 8.1,
-  colW: [1.7, 3.4, 1.0, 1.0, 1.0],
+  colW: [1.45, 1.95, 0.95, 2.3, 1.45],
   rowH: 0.64,
-  fontSize: 12.5, fontFace: BODY, color: INK,
+  fontSize: 12, fontFace: BODY, color: INK,
   border: { type: "solid", color: "CFD8DF", pt: 0.75 },
   fill: { color: WHITE },
   valign: "middle",
 });
 
-card(s, { x: 9.0, y: 1.7, w: 3.7, h: 4.3, fill: "FDF0E1" });
-s.addText("Fill before presenting", {
+card(s, { x: 9.0, y: 1.7, w: 3.7, h: 4.3, fill: "E6F4F1" });
+s.addText("What the grid says", {
   x: 9.24, y: 1.92, w: 3.22, h: 0.35,
-  fontSize: 14, bold: true, color: "B35F0A", fontFace: BODY, margin: 0,
+  fontSize: 14, bold: true, color: TEAL, fontFace: BODY, margin: 0,
 });
 s.addText(
-  "python -m src.ablation\n    --group all --epochs 40\n\n" +
-  "Results land in results/ablation_results.md — paste them into this table.\n\n" +
-  "If short on time, run the 'features' and 'architecture' groups first: they " +
-  "produce the two most quotable comparisons.",
+  "Calendar features are the biggest single factor — dropping them costs more " +
+  "than any architecture change.\n\n" +
+  "More capacity only hurts: the constraint is data, not expressiveness.\n\n" +
+  "Transformer beats the LSTM control, 21.8% vs. 20.3% skill.\n\n" +
+  "Every config still beats persistence by ≥ 19.6% — the conclusion is robust.",
   { x: 9.24, y: 2.36, w: 3.22, h: 3.5, fontSize: 12, color: INK, fontFace: BODY, margin: 0 },
 );
 
 s.addNotes(
-  "14:00–14:30. This is the evidence the architecture was chosen rather than " +
-  "assumed — it carries real weight under 'difficulty of NN design'. If the runs " +
-  "are not finished by Wednesday, delete this slide rather than showing dashes."
+  "14:00–14:30 · SPEAKER 3\n" +
+  "CUE: The evidence the architecture was chosen rather than assumed — real " +
+  "weight under 'difficulty of NN design'.\n\n" +
+  "SCRIPT:\n" +
+  "Every row here is an independent train-and-evaluate cycle — one design " +
+  "decision changed at a time, everything else held fixed. Three takeaways. " +
+  "The calendar features matter most: dropping them costs more RMSE than any " +
+  "architecture change. More capacity only hurts — doubling depth or width " +
+  "makes things worse, so the constraint is data, not expressiveness, which " +
+  "is why our model is deliberately small. And the Transformer does beat a " +
+  "parameter-matched LSTM — 21.8 versus 20.3 percent skill. A real margin, " +
+  "and an honest one: every configuration in this grid still beats " +
+  "persistence by at least 19.6 percent, so the conclusion doesn't hinge on " +
+  "any single design choice."
 );
 
 // ---------------------------------------------------------------- 13  Limitations
@@ -572,8 +746,17 @@ bullets(s, [
 ], { x: 7.18, y: 2.42, w: 5.24, h: 4.0, fontSize: 12.5, spaceAfter: 13 });
 
 s.addNotes(
-  "14:30–14:50. Be brisk. The quantile-loss point is the strongest one because it " +
-  "follows directly from the error analysis you just showed."
+  "14:30–14:50 · SPEAKER 3\n" +
+  "CUE: Be brisk. The quantile-loss point is strongest — it follows directly " +
+  "from the error analysis.\n\n" +
+  "SCRIPT:\n" +
+  "Limitations, briefly and honestly: one household, so no claims about " +
+  "generalization. No weather data — temperature is the strongest known driver " +
+  "of residential demand and it isn't in this dataset, which caps achievable " +
+  "accuracy. And point forecasts only. That's why the top future-work item is " +
+  "a quantile loss — it attacks the peak-hedging you just watched — followed " +
+  "by weather features and multi-hour horizons, which the code already " +
+  "supports."
 );
 
 // ---------------------------------------------------------------- 14  References
@@ -601,7 +784,13 @@ s.addText(
     paraSpaceAfter: 6, margin: 0, valign: "top" },
 );
 
-s.addNotes("14:50–15:00. Do not read these. Leave up while transitioning to questions.");
+s.addNotes(
+  "14:50–15:00 · SPEAKER 3\n" +
+  "CUE: Do not read these. Leave up while transitioning to questions.\n\n" +
+  "SCRIPT:\n" +
+  "These are the works that shaped the design — happy to point at any of them " +
+  "in questions. Thank you — what would you like to ask?"
+);
 
 // ---------------------------------------------------------------- 15  Questions
 
@@ -623,7 +812,7 @@ s.addText("William Peng   ·   Ciara Cameron   ·   Christopher Pedretti", {
 s.addNotes(
   "Anticipated questions:\n" +
   "· Why a Transformer over an LSTM? — constant dependency length; see the LSTM control in the ablation.\n" +
-  "· Why only 19% over persistence? — appliance events are driven by human decisions that leave no trace in prior meter readings.\n" +
+  "· Why only ~22% over persistence? — appliance events are driven by human decisions that leave no trace in prior meter readings.\n" +
   "· What does attention actually learn? — untested; attention-weight visualisation is named as future work. Do not overclaim.\n" +
   "· Why window length 24? — one full daily cycle; see the window ablation.\n" +
   "· Did you try a linear baseline? — no, and Zeng et al. 2023 says we should. Concede it."
