@@ -4,8 +4,9 @@ The raw UCI "Individual Household Electric Power Consumption" file is
 minute-level and contains missing values marked with '?'. This module turns it
 into the hourly, standardized, windowed tensors the model consumes.
 
-All scalers are fit on the training split only, so no test-set statistics ever
-leak backwards into training.
+All scalers are fit on the training split only, and gaps are interpolated
+independently within each split, so no test-set information ever leaks backwards
+into training.
 """
 
 from __future__ import annotations
@@ -104,10 +105,19 @@ def load_raw(data_path: Path) -> pd.DataFrame:
 
 
 def to_hourly(df: pd.DataFrame) -> pd.DataFrame:
-    """Downsample minute-level readings to hourly means and fill remaining gaps."""
-    hourly = df.resample("h").mean()
-    hourly = hourly.interpolate(method="time", limit_direction="both")
-    return hourly
+    """Downsample minute-level readings to hourly means.
+
+    Gap filling deliberately does *not* happen here. Interpolating before the
+    chronological split lets readings either side of a split boundary inform each
+    other, which is leakage: a test hour next to the boundary would be filled
+    using training values, and vice versa. Call `impute_split` per split instead.
+    """
+    return df.resample("h").mean()
+
+
+def impute_split(df: pd.DataFrame) -> pd.DataFrame:
+    """Time-interpolate gaps within one split, using only that split's values."""
+    return df.interpolate(method="time", limit_direction="both")
 
 
 def add_calendar_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -190,6 +200,11 @@ def prepare_data(config: DataConfig) -> PreparedData:
     train_df, val_df, test_df = chronological_split(
         model_df, config.train_frac, config.val_frac
     )
+
+    # Impute after splitting so no split borrows values from another.
+    train_df = impute_split(train_df)
+    val_df = impute_split(val_df)
+    test_df = impute_split(test_df)
 
     feature_scaler = StandardScaler()
     target_scaler = StandardScaler()

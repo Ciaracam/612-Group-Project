@@ -92,7 +92,14 @@ def load_model(run_name: str):
 @st.cache_data(show_spinner="Preparing test data…")
 def load_live_test_data(run_name: str):
     """Rebuild the test split from the raw dataset so the demo forecasts live."""
-    from src.data import DataConfig, add_calendar_features, chronological_split, load_raw, to_hourly
+    from src.data import (
+        DataConfig,
+        add_calendar_features,
+        chronological_split,
+        impute_split,
+        load_raw,
+        to_hourly,
+    )
 
     history = json.loads((MODELS_DIR / f"{run_name}_history.json").read_text())
     args = history["args"]
@@ -111,7 +118,8 @@ def load_live_test_data(run_name: str):
     _, _, test_df = chronological_split(
         hourly[config.feature_columns], config.train_frac, config.val_frac
     )
-    return test_df, config
+    # Same per-split imputation the model was trained under.
+    return impute_split(test_df), config
 
 
 @st.cache_data
