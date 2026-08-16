@@ -106,8 +106,10 @@ class ElectricityTransformer(nn.Module):
             batch_first=True,
             norm_first=True,
         )
+        # enable_nested_tensor=False: the fast path does not apply to pre-norm
+        # layers, and leaving it True makes PyTorch warn on every construction.
         self.transformer_encoder = nn.TransformerEncoder(
-            encoder_layer, num_layers=num_layers
+            encoder_layer, num_layers=num_layers, enable_nested_tensor=False
         )
 
         self.dropout = nn.Dropout(dropout)
