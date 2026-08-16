@@ -1,0 +1,16 @@
+{
+  "name": "612-group-project-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build toolchain for the generated final report (.docx) and presentation deck (.pptx). The documents are build outputs: edit scripts/build_report.js or scripts/build_deck.js and rebuild.",
+  "license": "MIT",
+  "scripts": {
+    "build:report": "node scripts/build_report.js",
+    "build:deck": "node scripts/build_deck.js",
+    "build": "node scripts/build_report.js && node scripts/build_deck.js"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "pptxgenjs": "^3.12.0"
+  }
+}

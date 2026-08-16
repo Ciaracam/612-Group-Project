@@ -14,15 +14,15 @@ Evaluated on 5,165 held-out hourly predictions the model never saw during traini
 
 | Model | MAE (kW) | RMSE (kW) | R² |
 |---|---|---|---|
-| **Transformer (ours)** | **0.3208** | **0.4643** | **0.561** |
+| **Transformer (ours)** | **0.3062** | **0.4494** | **0.589** |
 | Naive persistence (t−1h) | 0.3724 | 0.5745 | 0.327 |
 | Mean predictor | 0.5711 | 0.7005 | 0.000 |
 | Seasonal naive (t−24h) | 0.4976 | 0.7424 | −0.121 |
 
-A **19.2% RMSE reduction over naive persistence**, the standard free forecast for
+A **21.8% RMSE reduction over naive persistence**, the standard free forecast for
 hourly load data.
 
-![Model vs baselines](figures/baseline_comparison.png)
+![Model vs baselines](figures/transformer_h1_baseline_comparison.png)
 
 ---
 
@@ -115,6 +115,20 @@ python -m src.ablation --group all --epochs 40                # full ablation gr
 
 The ablation runner writes `results/ablation_results.{csv,md,json}`.
 
+### Rebuild the report and deck
+
+The final report (`report/final_report.docx`) and presentation
+(`presentation/MSML612_final_presentation.pptx`) are **generated documents** — do
+not edit them directly. Edit `scripts/build_report.js` / `scripts/build_deck.js`
+and rebuild (requires Node 18+):
+
+```bash
+npm install
+npm run build
+```
+
+This keeps every number consistent across the README, report, and deck.
+
 ---
 
 ## Live demo
@@ -148,7 +162,9 @@ committed test predictions instead of forecasting live.
 ├── results/                 metrics and ablation tables (generated)
 ├── scripts/
 │   ├── make_architecture_diagram.py
-│   └── make_interim_figures.py
+│   ├── make_interim_figures.py
+│   ├── build_report.js          generates report/final_report.docx
+│   └── build_deck.js            generates the presentation .pptx
 ├── src/
 │   ├── data.py              loading, cleaning, features, windowing
 │   ├── model.py             Transformer and LSTM control
