@@ -98,12 +98,14 @@ Prints the comparison table, writes `results/transformer_h1_metrics.json` and
 ### Reproduce the figures without the dataset
 
 ```bash
-python scripts/make_interim_figures.py
+python scripts/make_figures.py
 python scripts/make_architecture_diagram.py
 ```
 
-These read the committed predictions in `models/test_predictions.csv`, so they
-work on a fresh clone with no dataset and no GPU.
+These read the committed predictions in `results/transformer_h1_predictions.csv`
+and the recorded loss history in `models/transformer_h1_history.json`, so they
+work on a fresh clone with no dataset and no GPU, and they reproduce exactly the
+figures the report and deck embed. Pass `--run-name` to plot a different run.
 
 ### Other experiments
 
@@ -162,7 +164,8 @@ committed test predictions instead of forecasting live.
 ├── results/                 metrics and ablation tables (generated)
 ├── scripts/
 │   ├── make_architecture_diagram.py
-│   ├── make_interim_figures.py
+│   ├── make_figures.py          regenerates figures from committed results
+│   ├── build_notebook.py        generates the walkthrough notebook
 │   ├── build_report.js          generates report/final_report.docx
 │   └── build_deck.js            generates the presentation .pptx
 ├── src/

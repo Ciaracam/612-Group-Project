@@ -4,7 +4,7 @@
  *   node scripts/build_report.js
  *
  * Figures are read from figures/; regenerate them first with
- * scripts/make_interim_figures.py and scripts/make_architecture_diagram.py.
+ * scripts/make_figures.py and scripts/make_architecture_diagram.py.
  */
 
 const fs = require("fs");
