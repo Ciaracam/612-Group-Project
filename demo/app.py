@@ -28,6 +28,13 @@ from src.baselines import compute_all_baselines, regression_metrics, skill_score
 DATA_PATH = ROOT / "data" / "household_power_consumption.txt"
 MODELS_DIR = ROOT / "models"
 
+# Amber matches the "Predicted" series in the report figures, so the demo and the
+# slides read the same way. Both hold up against the light and dark Streamlit
+# themes, which the default palette does not — the forecast blended into the
+# actual series on a dark background.
+ACTUAL_COLOR = "#6FA8DC"
+FORECAST_COLOR = "#E8871E"
+
 st.set_page_config(page_title="Electricity Load Forecasting", layout="wide")
 
 
@@ -235,7 +242,8 @@ with tab_forecast:
         if len(context):
             forecast = pd.concat([context.iloc[-1:], forecast])
         chart["Forecast"] = forecast
-        st.line_chart(chart, height=380)
+        # Colour order follows the column order: Actual, then Forecast.
+        st.line_chart(chart, height=380, color=[ACTUAL_COLOR, FORECAST_COLOR])
 
         with st.expander("Model input (last 24 hours, original units)"):
             st.dataframe(window, use_container_width=True)
@@ -259,7 +267,11 @@ with tab_forecast:
             "Test-period window",
             0, max(0, len(predictions) - window_hours), 0, step=24,
         )
-        st.line_chart(predictions.iloc[start : start + window_hours], height=380)
+        st.line_chart(
+            predictions.iloc[start : start + window_hours],
+            height=380,
+            color=[ACTUAL_COLOR, FORECAST_COLOR],
+        )
 
 # --------------------------------------------------------------------------- #
 # Performance tab
