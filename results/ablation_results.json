@@ -1,0 +1,132 @@
+[
+  {
+    "Study": "window",
+    "Configuration": "win24",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3062,
+    "RMSE": 0.4494,
+    "R2": 0.5885,
+    "Skill vs persistence (%)": 21.8
+  },
+  {
+    "Study": "window",
+    "Configuration": "win48",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.309,
+    "RMSE": 0.4543,
+    "R2": 0.5802,
+    "Skill vs persistence (%)": 21.0
+  },
+  {
+    "Study": "window",
+    "Configuration": "win168",
+    "Params": 67969,
+    "Best epoch": 13,
+    "MAE": 0.3076,
+    "RMSE": 0.4553,
+    "R2": 0.5816,
+    "Skill vs persistence (%)": 20.8
+  },
+  {
+    "Study": "capacity",
+    "Configuration": "d64_l2",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3062,
+    "RMSE": 0.4494,
+    "R2": 0.5885,
+    "Skill vs persistence (%)": 21.8
+  },
+  {
+    "Study": "capacity",
+    "Configuration": "d64_l4",
+    "Params": 134913,
+    "Best epoch": 11,
+    "MAE": 0.3143,
+    "RMSE": 0.4539,
+    "R2": 0.5802,
+    "Skill vs persistence (%)": 21.0
+  },
+  {
+    "Study": "capacity",
+    "Configuration": "d128_l2",
+    "Params": 267009,
+    "Best epoch": 6,
+    "MAE": 0.3174,
+    "RMSE": 0.456,
+    "R2": 0.5763,
+    "Skill vs persistence (%)": 20.6
+  },
+  {
+    "Study": "positional",
+    "Configuration": "pos_sin",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3062,
+    "RMSE": 0.4494,
+    "R2": 0.5885,
+    "Skill vs persistence (%)": 21.8
+  },
+  {
+    "Study": "positional",
+    "Configuration": "pos_learn",
+    "Params": 387969,
+    "Best epoch": 6,
+    "MAE": 0.3211,
+    "RMSE": 0.4573,
+    "R2": 0.574,
+    "Skill vs persistence (%)": 20.4
+  },
+  {
+    "Study": "positional",
+    "Configuration": "pos_none",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3118,
+    "RMSE": 0.4542,
+    "R2": 0.5796,
+    "Skill vs persistence (%)": 20.9
+  },
+  {
+    "Study": "features",
+    "Configuration": "feat_full",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3062,
+    "RMSE": 0.4494,
+    "R2": 0.5885,
+    "Skill vs persistence (%)": 21.8
+  },
+  {
+    "Study": "features",
+    "Configuration": "feat_nocal",
+    "Params": 67521,
+    "Best epoch": 11,
+    "MAE": 0.3097,
+    "RMSE": 0.4617,
+    "R2": 0.5657,
+    "Skill vs persistence (%)": 19.6
+  },
+  {
+    "Study": "architecture",
+    "Configuration": "arch_transformer",
+    "Params": 67969,
+    "Best epoch": 11,
+    "MAE": 0.3062,
+    "RMSE": 0.4494,
+    "R2": 0.5885,
+    "Skill vs persistence (%)": 21.8
+  },
+  {
+    "Study": "architecture",
+    "Configuration": "arch_lstm",
+    "Params": 53825,
+    "Best epoch": 6,
+    "MAE": 0.3199,
+    "RMSE": 0.4579,
+    "R2": 0.5728,
+    "Skill vs persistence (%)": 20.3
+  }
+]

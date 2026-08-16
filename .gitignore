@@ -1,3 +1,23 @@
-.DS_Store
-.ipynb_checkpoints/
+# Raw dataset (127 MB, above GitHub's file size limit)
 data/household_power_consumption.txt
+data/*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (report/deck build toolchain)
+node_modules/
+
+# Streamlit
+.streamlit/secrets.toml
