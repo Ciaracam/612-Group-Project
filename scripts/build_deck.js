@@ -125,7 +125,7 @@ s.addText("MSML612 — Deep Learning   |   Final Project   |   August 2026", {
   fontSize: 13, color: "8FA6BA", fontFace: BODY, margin: 0,
 });
 s.addNotes(
-  "0:00–0:30 · SPEAKER 1 (suggested: intro + data)\n" +
+  "0:00–0:30 · WILLIAM — intro + data (slides 1–3)\n" +
   "CUE: Introduce team and topic in one line.\n\n" +
   "SCRIPT:\n" +
   "Good evening — we're William, Ciara, and Chris, and our project is forecasting " +
@@ -163,7 +163,7 @@ statCard(s, { x: 8.1, y: 4.62, w: 2.2, value: "2.08M", label: "raw minute-level 
 statCard(s, { x: 10.5, y: 4.62, w: 2.2, value: "4 yrs", label: "of continuous metering" });
 
 s.addNotes(
-  "0:30–1:45 · SPEAKER 1\n" +
+  "0:30–1:45 · WILLIAM\n" +
   "CUE: Aggregate-vs-household is why this is hard and why R² is not 0.95. Land " +
   "the framing question: the bar is 'better than free', not 'low error'.\n\n" +
   "SCRIPT:\n" +
@@ -213,7 +213,7 @@ s.addText(
 );
 
 s.addNotes(
-  "1:45–3:15 · SPEAKER 1\n" +
+  "1:45–3:15 · WILLIAM\n" +
   "CUE: Walk the pipeline quickly; spend the time on the split/scaling box — " +
   "that is what a grader will probe. Expect a question here.\n\n" +
   "SCRIPT:\n" +
@@ -266,7 +266,7 @@ solutions.forEach((sol, i) => {
 });
 
 s.addNotes(
-  "3:15–4:45 · SPEAKER 2 (suggested: solution + architecture)\n" +
+  "3:15–4:45 · CIARA — solution + architecture (slides 4–7)\n" +
   "CUE: The novelty slide — 3 rubric points. Not 'we used a Transformer'; the " +
   "argument is attention fits this data for a specific reason, and the " +
   "evaluation could have proven us wrong.\n\n" +
@@ -316,7 +316,7 @@ tools.forEach((t, i) => {
 });
 
 s.addNotes(
-  "4:45–5:15 · SPEAKER 2\n" +
+  "4:45–5:15 · CIARA\n" +
   "CUE: Move fast. One rubric point; do not dwell.\n\n" +
   "SCRIPT:\n" +
   "Quickly on tooling: PyTorch for the model and training loop, pandas and " +
@@ -339,7 +339,7 @@ s.addImage({
   x: 1.79, y: 0.9, w: 9.72, h: 6.3,
 });
 s.addNotes(
-  "5:15–7:00 · SPEAKER 2\n" +
+  "5:15–7:00 · CIARA\n" +
   "CUE: Two rubric points — highest-value slide per second. Trace the path out " +
   "loud, call out tensor shapes: they show you understand the data flow, not " +
   "just the diagram.\n\n" +
@@ -395,7 +395,7 @@ bullets(s, [
 ], { x: 8.4, y: 4.15, w: 4.3, h: 2.0, fontSize: 12.5, spaceAfter: 7 });
 
 s.addNotes(
-  "7:00–8:15 · SPEAKER 2\n" +
+  "7:00–8:15 · CIARA\n" +
   "CUE: REQUIRED PLOT — say 'training and validation loss versus epoch' out " +
   "loud. The overfitting story is a strength: diagnosed on the interim curve, " +
   "fixed in the final run shown here.\n\n" +
@@ -450,7 +450,7 @@ s.addText(
 );
 
 s.addNotes(
-  "8:15–9:15 · SPEAKER 3 (suggested: results + demo)\n" +
+  "8:15–9:15 · CHRIS — results + demo (slides 8–14)\n" +
   "CUE: Make the case that this is the honest way to evaluate. Zeng et al. " +
   "2023 if asked why we bothered.\n\n" +
   "SCRIPT:\n" +
@@ -529,7 +529,7 @@ s.addImage({
 });
 
 s.addNotes(
-  "9:15–10:30 · SPEAKER 3\n" +
+  "9:15–10:30 · CHRIS\n" +
   "CUE: Lead with 21.8%. The negative-R² observation for seasonal naive is " +
   "your best 'we actually looked at this' moment.\n\n" +
   "SCRIPT:\n" +
@@ -582,7 +582,7 @@ s.addText(
 );
 
 s.addNotes(
-  "10:30–11:30 · SPEAKER 3\n" +
+  "10:30–11:30 · CHRIS\n" +
   "CUE: The defence against 'why is R² only 0.59?'. MSE makes hedging optimal; " +
   "the fix is a quantile loss, not a bigger model. Say that explicitly.\n\n" +
   "SCRIPT:\n" +
@@ -626,25 +626,30 @@ bullets(s, [
 ], { x: 1.0, y: 4.85, w: 11.3, h: 1.5, fontSize: 14, color: "C9D8E4", spaceAfter: 8 });
 
 s.addNotes(
-  "11:30–14:00 · SPEAKER 3\n" +
+  "11:30–14:00 · CHRIS\n" +
   "CUE: REQUIRED — 3 rubric points. App already running before the talk starts; " +
   "never launch live. Two forecasts: calm overnight hour, then evening peak — " +
   "own the weakness. Fallback video ready.\n\n" +
+  "SLIDER ORIGINS — verified, do not hunt live:\n" +
+  "  · CALM  = 2556  (10 Aug 2010, 05:00) — actual 0.314 kW, predicted 0.314, error 0.0002\n" +
+  "  · PEAK  = 5017  (20 Nov 2010, 18:00) — actual 5.627 kW, predicted 2.294, short by 3.33\n" +
+  "  (PEAK is the same 5.63 kW maximum quoted on slide 10 and in the report.)\n" +
+  "  Softer alternative if 5017 feels too brutal: 3843 (2 Oct 2010, 20:00), 3.94 vs 1.94.\n\n" +
   "SCRIPT (alt-tab to the browser):\n" +
   "This is the model you just saw evaluated, running live — the epoch-eleven " +
   "checkpoint, forecasting from the held-out test period. I pick any moment " +
   "with this slider; the model sees only the preceding 24 hours.\n" +
-  "First, a quiet overnight hour. [Set slider to a pre-chosen 3 a.m. origin.] " +
-  "Prediction, actual, absolute error — a few hundredths of a kilowatt. Routine " +
-  "load, and the model nails it.\n" +
-  "Now the hard case — an evening peak. [Set slider to the pre-chosen origin.] " +
-  "You can see exactly what the error analysis predicted: timing right, " +
-  "magnitude short. We're showing you the failure mode on purpose — it's " +
-  "systematic, we understand why it happens, and we know what fixes it.\n" +
+  "First, a quiet overnight hour. [Slider to 2556 — 10 August, 5 a.m.] " +
+  "Predicted 0.314 kilowatts, actual 0.314 — the error is two ten-thousandths " +
+  "of a kilowatt. Routine overnight load, and the model is essentially exact.\n" +
+  "Now the hard case — the single largest peak in the test set. [Slider to " +
+  "5017 — 20 November, 6 p.m.] Actual 5.63 kilowatts; we predict 2.29. That is " +
+  "the 5.6 versus 4.3 gap from the results slide, in its worst instance. Timing " +
+  "right, magnitude short. We're showing you the failure mode on purpose — it's " +
+  "systematic, we understand why it happens, and we know that a quantile loss " +
+  "is what fixes it.\n" +
   "[Optional if time: Performance tab — the live-computed table matches slide " +
-  "9.] [Alt-tab back to the deck.]\n" +
-  "REHEARSAL NOTE: choose and write down both slider origins beforehand; do " +
-  "not hunt for good examples live."
+  "9.] [Alt-tab back to the deck.]"
 );
 
 // ---------------------------------------------------------------- 12  Ablations
@@ -702,7 +707,7 @@ s.addText(
 );
 
 s.addNotes(
-  "14:00–14:30 · SPEAKER 3\n" +
+  "14:00–14:30 · CHRIS\n" +
   "CUE: The evidence the architecture was chosen rather than assumed — real " +
   "weight under 'difficulty of NN design'.\n\n" +
   "SCRIPT:\n" +
@@ -750,7 +755,7 @@ bullets(s, [
 ], { x: 7.18, y: 2.42, w: 5.24, h: 4.0, fontSize: 12.5, spaceAfter: 13 });
 
 s.addNotes(
-  "14:30–14:50 · SPEAKER 3\n" +
+  "14:30–14:50 · CHRIS\n" +
   "CUE: Be brisk. The quantile-loss point is strongest — it follows directly " +
   "from the error analysis.\n\n" +
   "SCRIPT:\n" +
@@ -789,7 +794,7 @@ s.addText(
 );
 
 s.addNotes(
-  "14:50–15:00 · SPEAKER 3\n" +
+  "14:50–15:00 · CHRIS\n" +
   "CUE: Do not read these. Leave up while transitioning to questions.\n\n" +
   "SCRIPT:\n" +
   "These are the works that shaped the design — happy to point at any of them " +

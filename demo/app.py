@@ -23,7 +23,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.baselines import compute_all_baselines, regression_metrics  # noqa: E402
+from src.baselines import compute_all_baselines, regression_metrics, skill_score  # noqa: E402
 
 DATA_PATH = ROOT / "data" / "household_power_consumption.txt"
 MODELS_DIR = ROOT / "models"
@@ -129,11 +129,27 @@ def load_fallback_predictions():
 
 @st.cache_data
 def load_run_predictions(run_name: str):
-    """Prefer the selected run's predictions; fall back to the interim CSV."""
+    """Return (predictions, is_fallback) for the selected run.
+
+    Never substitute another run's numbers silently. Callers must surface
+    is_fallback, otherwise a mistyped run name reads as live metrics for a run
+    that was never evaluated.
+    """
     run_csv = ROOT / "results" / f"{run_name}_predictions.csv"
     if run_csv.exists():
-        return pd.read_csv(run_csv)
-    return load_fallback_predictions()
+        return pd.read_csv(run_csv), False
+    return load_fallback_predictions(), True
+
+
+def model_label(run_name: str) -> str:
+    """Row label for the comparison table, from the run's own recorded model."""
+    history_path = MODELS_DIR / f"{run_name}_history.json"
+    if history_path.exists():
+        args = json.loads(history_path.read_text()).get("args", {})
+        if args.get("model") == "lstm":
+            return "LSTM (ours)"
+        return "Transformer (ours)"
+    return "Selected run"
 
 
 # --------------------------------------------------------------------------- #
@@ -212,7 +228,13 @@ with tab_forecast:
         chart = pd.DataFrame(
             {"Actual": pd.concat([context, pd.Series(truth, index=future_index)])}
         )
-        chart["Forecast"] = pd.Series(prediction, index=future_index)
+        # A one-point series is invisible under a line mark, which is exactly the
+        # horizon=1 case. Anchor the forecast to the last observed hour so it
+        # always draws as a segment.
+        forecast = pd.Series(prediction, index=future_index)
+        if len(context):
+            forecast = pd.concat([context.iloc[-1:], forecast])
+        chart["Forecast"] = forecast
         st.line_chart(chart, height=380)
 
         with st.expander("Model input (last 24 hours, original units)"):
@@ -227,7 +249,12 @@ with tab_forecast:
         if "load_error" in st.session_state:
             st.caption(f"Details: {st.session_state['load_error']}")
 
-        predictions = load_fallback_predictions()
+        predictions, is_fallback = load_run_predictions(run_name)
+        if is_fallback:
+            st.error(
+                f"No predictions on file for **{run_name}**. Showing the "
+                "superseded interim run — these are **not** this run's forecasts."
+            )
         start = st.slider(
             "Test-period window",
             0, max(0, len(predictions) - window_hours), 0, step=24,
@@ -238,22 +265,27 @@ with tab_forecast:
 # Performance tab
 # --------------------------------------------------------------------------- #
 with tab_metrics:
-    predictions = load_run_predictions(run_name)
+    predictions, is_fallback = load_run_predictions(run_name)
+    if is_fallback:
+        st.error(
+            f"No evaluation results for **{run_name}** — the table below is the "
+            "superseded interim run, **not** this run. Generate the real numbers "
+            f"with `python -m src.evaluate --run-name {run_name}`."
+        )
     actual = predictions["Actual"].to_numpy()
     predicted = predictions["Predicted"].to_numpy()
 
-    comparison = {"Transformer (ours)": regression_metrics(actual, predicted)}
+    label = "Interim run (superseded)" if is_fallback else model_label(run_name)
+    comparison = {label: regression_metrics(actual, predicted)}
     comparison.update(compute_all_baselines(actual))
 
     table = pd.DataFrame(comparison).T[["MAE", "RMSE", "R2"]].round(4)
     st.subheader("Test-set performance against reference forecasters")
     st.dataframe(table, use_container_width=True)
 
-    ours = comparison["Transformer (ours)"]["RMSE"]
-    naive = comparison["Naive persistence (t-1h)"]["RMSE"]
     st.metric(
         "RMSE reduction vs. naive persistence",
-        f"{(1 - ours / naive) * 100:.1f}%",
+        f"{skill_score(comparison[label]['RMSE'], comparison['Naive persistence (t-1h)']['RMSE']):.1f}%",
     )
 
     st.caption(
