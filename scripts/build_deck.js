@@ -288,7 +288,7 @@ s = pres.addSlide();
 titleOf(s, "Training", "Required plot: training and validation loss vs. epoch");
 
 s.addImage({
-  path: path.join(FIG, "loss_curve.png"),
+  path: path.join(FIG, "transformer_h1_loss_curve.png"),
   x: M, y: 1.55, w: 7.4, h: 7.4 * 0.56,
 });
 
@@ -298,9 +298,9 @@ s.addText("What this curve told us", {
   fontSize: 14, bold: true, color: "B35F0A", fontFace: BODY, margin: 0,
 });
 s.addText(
-  "Validation loss bottoms at epoch 9 (0.3404) then rises to 0.3618 by epoch 20 " +
-  "while training loss keeps falling. Textbook overfitting — 11 epochs of wasted " +
-  "compute. We added early stopping on validation loss.",
+  "Our interim run overfit from epoch 9 to 20 — validation rising while training " +
+  "fell. The final run stops that: best validation 0.3161 at epoch 11, LR halved " +
+  "as improvement stalls, training halted at epoch 19.",
   { x: 8.5, y: 2.12, w: 3.95, h: 1.6, fontSize: 12.5, color: INK, fontFace: BODY, margin: 0 },
 );
 
@@ -315,7 +315,7 @@ bullets(s, [
 s.addNotes(
   "7:00–8:15. REQUIRED PLOT — say the words 'training and validation loss versus " +
   "epoch' out loud. The overfitting story is a strength: we diagnosed it from the " +
-  "curve and fixed it. Replace this figure with the final early-stopped run."
+  "interim curve and fixed it; this figure is the final early-stopped run."
 );
 
 // ---------------------------------------------------------------- 8  Evaluation
@@ -373,9 +373,9 @@ const rows = [
   ],
   [
     { text: "Transformer (ours)", options: { bold: true } },
-    { text: "0.3208", options: { bold: true, align: "center" } },
-    { text: "0.4643", options: { bold: true, align: "center" } },
-    { text: "0.561", options: { bold: true, align: "center" } },
+    { text: "0.3062", options: { bold: true, align: "center" } },
+    { text: "0.4494", options: { bold: true, align: "center" } },
+    { text: "0.589", options: { bold: true, align: "center" } },
   ],
   ["Naive persistence (t−1h)", { text: "0.3724", options: { align: "center" } },
     { text: "0.5745", options: { align: "center" } }, { text: "0.327", options: { align: "center" } }],
@@ -397,7 +397,7 @@ s.addTable(rows, {
 
 statCard(s, {
   x: 8.25, y: 1.65, w: 4.45,
-  value: "19.2%", label: "RMSE reduction vs. naive persistence",
+  value: "21.8%", label: "RMSE reduction vs. naive persistence",
   color: TEAL, fill: "E6F4F1",
 });
 
@@ -409,19 +409,19 @@ s.addText("Two things worth noticing", {
 s.addText(
   "Seasonal naive scores worse than the mean predictor — a negative R². Household " +
   "routines vary too much day to day for yesterday's 7pm to predict today's.\n\n" +
-  "Our margin is larger in RMSE (19.2%) than MAE (13.9%): the gain is concentrated " +
+  "Our margin is larger in RMSE (21.8%) than MAE (17.8%): the gain is concentrated " +
   "exactly where persistence fails worst.",
   { x: 8.5, y: 4.2, w: 3.95, h: 2.3, fontSize: 12.5, color: GRAY, fontFace: BODY, margin: 0 },
 );
 
 // Fill the space beneath the table with the same comparison as a visual.
 s.addImage({
-  path: path.join(FIG, "baseline_comparison.png"),
+  path: path.join(FIG, "transformer_h1_baseline_comparison.png"),
   x: 2.25, y: 4.78, w: 4.0, h: 4.0 * 0.6118,
 });
 
 s.addNotes(
-  "9:15–10:30. Lead with 19.2%. The negative-R² observation for seasonal naive is " +
+  "9:15–10:30. Lead with 21.8%. The negative-R² observation for seasonal naive is " +
   "your best 'we actually looked at this' moment — it shows the daily cycle is not " +
   "sufficient at household scale."
 );
@@ -432,11 +432,11 @@ s = pres.addSlide();
 titleOf(s, "Where the Model Still Struggles");
 
 s.addImage({
-  path: path.join(FIG, "actual_vs_predicted.png"),
+  path: path.join(FIG, "transformer_h1_actual_vs_predicted.png"),
   x: M, y: 1.5, w: 8.0, h: 8.0 * 0.4421,
 });
 s.addImage({
-  path: path.join(FIG, "error_distribution.png"),
+  path: path.join(FIG, "transformer_h1_error_distribution.png"),
   x: M, y: 4.15, w: 8.0, h: 8.0 * 0.40,
 });
 
@@ -447,7 +447,7 @@ s.addText("Peak under-prediction", {
 });
 s.addText(
   "The model tracks the daily cycle and event timing, but consistently under-shoots " +
-  "peak magnitude — predicted maxima reach 3.9 kW against observed 5.6 kW.\n\n" +
+  "peak magnitude — predicted maxima reach 4.3 kW against observed 5.6 kW.\n\n" +
   "Residuals are right-skewed; the scatter falls below the diagonal at high load.\n\n" +
   "This is rational under MSE. A confident spike that lands an hour off is punished " +
   "twice — missed peak plus false peak — so hedging toward the mean is optimal " +
@@ -457,7 +457,7 @@ s.addText(
 );
 
 s.addNotes(
-  "10:30–11:30. This slide is your defence against 'why is R² only 0.56?'. The " +
+  "10:30–11:30. This slide is your defence against 'why is R² only 0.59?'. The " +
   "answer is that MSE makes hedging optimal, and the fix is a quantile loss — not " +
   "a bigger model. Say that explicitly."
 );

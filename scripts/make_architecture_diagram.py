@@ -183,7 +183,7 @@ def main() -> None:
         ("Inverse transform", "target StandardScaler\nback to kilowatts", PALE_TEAL, TEAL),
         ("Metrics", "MAE · RMSE · R²\nper-horizon breakdown", PALE, INK),
         ("Reference forecasters", "persistence (t-1h)\nseasonal naive (t-24h)\nmean predictor", PALE, INK),
-        ("Reported result", "19.2% RMSE reduction\nover persistence", PALE_AMBER, AMBER),
+        ("Reported result", "21.8% RMSE reduction\nover persistence", PALE_AMBER, AMBER),
     ]
     ow, ogap, ox0 = 20.0, 3.0, 6.0
     for i, (title, sub, face, edge) in enumerate(outputs):

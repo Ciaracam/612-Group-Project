@@ -228,11 +228,11 @@ children.push(
 children.push(h2("Abstract"));
 children.push(rich([
   { text: "Short-term electricity load forecasting underpins generation scheduling, demand-response programmes, and household battery dispatch. We implement an encoder-only Transformer in PyTorch for one-hour-ahead forecasting of household global active power from multivariate meter data, using the UCI Individual Household Electric Power Consumption dataset. Minute-level readings are resampled to hourly means, augmented with cyclical calendar features, split chronologically, and presented to the model as 24-hour sliding windows. On 5,165 held-out hourly predictions the model attains an MAE of " },
-  { text: "0.3208 kW", bold: true },
+  { text: "0.3062 kW", bold: true },
   { text: ", an RMSE of " },
-  { text: "0.4643 kW", bold: true },
-  { text: ", and an R² of 0.561, a " },
-  { text: "19.2% reduction in RMSE relative to a naive persistence forecast", bold: true },
+  { text: "0.4494 kW", bold: true },
+  { text: ", and an R² of 0.589, a " },
+  { text: "21.8% reduction in RMSE relative to a naive persistence forecast", bold: true },
   { text: " — the standard free baseline for hourly load. We report ablations over window length, model capacity, positional encoding, and feature set, and compare against a parameter-matched LSTM. Error analysis shows the dominant residual failure mode is systematic under-prediction of sharp demand peaks, a consequence of the squared-error objective rather than of insufficient capacity." },
 ]));
 
@@ -262,7 +262,7 @@ children.push(body("The dataset [9] comprises 2,075,259 minute-level readings fr
 
 children.push(h2("3.1  Cleaning and resampling"));
 children.push(body("Date and time are stored as separate string columns and were combined into a single timestamp index. All measurement columns were coerced to numeric, with the file's '?' sentinel treated as missing. Duplicate timestamps, which arise from daylight-saving transitions, were resolved by keeping the first record."));
-children.push(body("Approximately 1.25% of raw rows carry at least one missing value. Rather than dropping them — which would fragment the series and break the sliding-window assumption of contiguity — we resample to hourly means, which absorbs isolated minute-level gaps, and then apply time-weighted interpolation to any hour that remains empty. Resampling also reduces the modelling set by a factor of 60, from 2.08 million rows to 34,589 hours, without discarding information relevant at the forecast horizon."));
+children.push(body("Approximately 1.25% of raw rows carry at least one missing value. Rather than dropping them — which would fragment the series and break the sliding-window assumption of contiguity — we resample to hourly means, which absorbs isolated minute-level gaps, and then apply time-weighted interpolation to any hour that remains empty. Crucially, that interpolation runs after the chronological split, independently within each of train, validation, and test: interpolating the full series first would fill gaps adjacent to a split boundary using values from the other side, quietly leaking training data into the test set. Resampling also reduces the modelling set by a factor of 60, from 2.08 million rows to 34,589 hours, without discarding information relevant at the forecast horizon."));
 
 children.push(h2("3.2  Feature engineering"));
 children.push(body("The seven physical measurements are supplemented with seven derived calendar features: sine and cosine encodings of hour of day, day of week, and month, plus a binary weekend indicator. The trigonometric encoding is deliberate — an integer hour feature would place hour 23 and hour 0 at maximum distance despite their adjacency, forcing the model to spend capacity learning a discontinuity that does not exist in the data. This yields 14 input features in total."));
@@ -325,12 +325,10 @@ children.push(caption("Table 2: Model configuration."));
 // ---- 5 Training
 children.push(h1("5.  Training Procedure"));
 children.push(body("Training minimizes mean squared error on standardized targets using Adam at a learning rate of 1e-3, with gradient-norm clipping at 1.0, a ReduceLROnPlateau schedule that halves the learning rate after three epochs without validation improvement, and early stopping after eight such epochs. The checkpoint with the lowest validation loss is retained for evaluation."));
-children.push(body("Early stopping is not a formality here. Our interim 20-epoch run reached its best validation loss of 0.3404 at epoch 9 and then deteriorated monotonically to 0.3618 by epoch 20 while training loss continued to fall from 0.3356 to 0.3052 — a clean separation of the two curves and an unambiguous overfitting signature. Figure 2 shows this. The final configuration halts once that divergence begins."));
+children.push(body("Early stopping is not a formality here. Our interim 20-epoch run reached its best validation loss at epoch 9 and then deteriorated monotonically through epoch 20 while training loss continued to fall — a clean separation of the two curves and an unambiguous overfitting signature. The final run behaves as that experience predicted: validation loss bottoms out at 0.3161 at epoch 11, the schedule halves the learning rate as improvement stalls, and training halts at epoch 19 rather than spending eight further epochs overfitting. Figure 2 shows the final run's curves."));
 
-children.push(...figure("loss_curve.png", 5.9,
-  "Figure 2: Training and validation loss against epoch for the interim 20-epoch run. Validation loss reaches its minimum at epoch 9 and rises thereafter while training loss continues to fall — the divergence that motivated adding early stopping."));
-
-children.push(todo("Regenerate Figure 2 from the final early-stopped run before submission (python -m src.evaluate --run-name transformer_h1), and update the epoch numbers in the paragraph above to match. The current figure is from the interim run and is retained here so the section is not empty."));
+children.push(...figure("transformer_h1_loss_curve.png", 5.9,
+  "Figure 2: Training and validation loss against epoch for the final early-stopped run. Validation loss reaches its minimum at epoch 11 (dashed line); early stopping halts training at epoch 19, once eight epochs pass without improvement."));
 
 children.push(h2("5.1  Reproducibility"));
 children.push(body("Random seeds for Python, NumPy, PyTorch, CUDA, and DataLoader shuffling are fixed at 42 and exposed as a command-line argument. Every training run writes a JSON history recording its full argument set, dataset statistics, trainable parameter count, and per-epoch losses, so any number reported in this paper can be traced to the run that produced it. The repository README documents the exact sequence of commands required to reproduce every table and figure below."));
@@ -351,7 +349,7 @@ children.push(body("Table 3 reports performance on 5,165 held-out hourly predict
 children.push(table(
   ["Model", "MAE (kW)", "RMSE (kW)", "R²", "Skill vs. persistence"],
   [
-    ["Transformer (ours)", "0.3208", "0.4643", "0.561", "+19.2%"],
+    ["Transformer (ours)", "0.3062", "0.4494", "0.589", "+21.8%"],
     ["Naive persistence (t−1h)", "0.3724", "0.5745", "0.327", "—"],
     ["Mean predictor", "0.5711", "0.7005", "0.000", "−21.9%"],
     ["Seasonal naive (t−24h)", "0.4976", "0.7424", "−0.121", "−29.2%"],
@@ -361,20 +359,20 @@ children.push(table(
 ));
 children.push(caption("Table 3: Test-set performance against reference forecasters. Lower MAE and RMSE are better; higher R² is better."));
 
-children.push(...figure("baseline_comparison.png", 5.8,
+children.push(...figure("transformer_h1_baseline_comparison.png", 5.8,
   "Figure 3: Test-set MAE and RMSE for the proposed model and the three reference forecasters."));
 
 children.push(body("Two aspects of this table are worth drawing out. First, seasonal naive performs worse than the mean predictor, with a negative R². Repeating the same hour from the previous day is actively harmful for a single household, because household routines vary day to day far more than aggregate demand does — the previous day's 7 p.m. is a poor guide to today's. This confirms that the daily cycle, while visually obvious, is not by itself a reliable predictor at this scale."));
-children.push(body("Second, the gap between the model and persistence is larger in RMSE (19.2%) than in MAE (13.9%). Since RMSE weights large errors more heavily, this indicates the model's advantage is concentrated in the cases persistence handles worst — the transitions into and out of high-demand periods, where the previous hour is least representative of the next."));
+children.push(body("Second, the gap between the model and persistence is larger in RMSE (21.8%) than in MAE (17.8%). Since RMSE weights large errors more heavily, this indicates the model's advantage is concentrated in the cases persistence handles worst — the transitions into and out of high-demand periods, where the previous hour is least representative of the next."));
 
 children.push(h2("7.1  Qualitative behaviour"));
-children.push(...figure("actual_vs_predicted.png", 6.5,
+children.push(...figure("transformer_h1_actual_vs_predicted.png", 6.5,
   "Figure 4: Actual and predicted global active power over the first two weeks of the test period. The model tracks the diurnal cycle and the timing of demand events, but consistently under-shoots peak magnitude."));
 
-children.push(body("Figure 4 shows the model reproducing both the baseline load level and the timing of demand events, but systematically failing to reach peak magnitudes. Predicted maxima top out near 3.9 kW against observed maxima above 5.6 kW."));
+children.push(body("Figure 4 shows the model reproducing both the baseline load level and the timing of demand events, but systematically failing to reach peak magnitudes. Predicted maxima top out near 4.3 kW against observed maxima above 5.6 kW."));
 
 children.push(h2("7.2  Error analysis"));
-children.push(...figure("error_distribution.png", 6.5,
+children.push(...figure("transformer_h1_error_distribution.png", 6.5,
   "Figure 5: Residual distribution (left) and predicted-versus-actual scatter (right). The residual distribution is right-skewed and the scatter falls below the diagonal at high loads, both indicating under-prediction of peaks."));
 
 children.push(body("The residual distribution is centred near zero but right-skewed, and the predicted-versus-actual scatter falls increasingly below the identity line as actual load rises. Both diagnostics point to the same behaviour: the model hedges toward the conditional mean at high demand."));
@@ -410,7 +408,7 @@ children.push(todo("Add one or two sentences after Table 4 interpreting the resu
 
 // ---- 8 Discussion
 children.push(h1("8.  Discussion"));
-children.push(body("The headline result is that self-attention over a 24-hour window extracts real predictive structure from single-household demand: a 19.2% RMSE reduction over persistence is a substantive margin on a series this noisy. At the same time, an R² of 0.561 means roughly 44% of the variance in hourly household load remains unexplained, and the error analysis locates most of that residual variance in the peaks."));
+children.push(body("The headline result is that self-attention over a 24-hour window extracts real predictive structure from single-household demand: a 21.8% RMSE reduction over persistence is a substantive margin on a series this noisy. At the same time, an R² of 0.589 means roughly 41% of the variance in hourly household load remains unexplained, and the error analysis locates most of that residual variance in the peaks."));
 children.push(body("This is consistent with the physical process. Individual appliance events are driven by human decisions that leave no trace in the meter data preceding them. No amount of attention over past power readings will reveal that someone is about to start the oven. Substantial further gains at this scale likely require either exogenous inputs that correlate with occupancy and behaviour, or a shift from point forecasts to distributional ones that represent the uncertainty honestly rather than averaging it away."));
 children.push(body("The finding of Zeng et al. [5] — that Transformer forecasters are often outperformed by simple linear models on standard benchmarks — is worth holding alongside our result. Our comparison is against naive forecasters rather than against a tuned linear model, and a linear autoregressive baseline would strengthen the claim. We regard this as the most valuable single addition to the present evaluation."));
 
@@ -432,7 +430,7 @@ children.push(bullet("Cross-household generalization. Evaluating on a multi-hous
 
 // ---- 10 Conclusion
 children.push(h1("10.  Conclusion"));
-children.push(body("We implemented an encoder-only Transformer for one-hour-ahead household electricity load forecasting and evaluated it against the reference forecasters that any such model must beat to be worth deploying. On held-out data the model achieves an MAE of 0.3208 kW and an RMSE of 0.4643 kW, reducing RMSE by 19.2% relative to naive persistence. Error analysis shows the remaining error is dominated by systematic under-prediction of demand peaks — a consequence of the squared-error objective rather than of model capacity, and the clearest direction for future work."));
+children.push(body("We implemented an encoder-only Transformer for one-hour-ahead household electricity load forecasting and evaluated it against the reference forecasters that any such model must beat to be worth deploying. On held-out data the model achieves an MAE of 0.3062 kW and an RMSE of 0.4494 kW, reducing RMSE by 21.8% relative to naive persistence. Error analysis shows the remaining error is dominated by systematic under-prediction of demand peaks — a consequence of the squared-error objective rather than of model capacity, and the clearest direction for future work."));
 
 // ---- References
 children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -470,7 +468,6 @@ children.push(body("The repository is public at github.com/Ciaracam/612-Group-Pr
     children: [new TextRun({ text: c, font: "Consolas", size: 19, color: INK })],
   })));
 
-children.push(todo("Confirm the repository URL above is correct and the repo is public before submission."));
 
 // --------------------------------------------------------------------------
 
