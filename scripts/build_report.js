@@ -235,7 +235,7 @@ children.push(rich([
   { text: "0.4494 kW", bold: true },
   { text: ", and an R² of 0.589, a " },
   { text: "21.8% reduction in RMSE relative to a naive persistence forecast", bold: true },
-  { text: " — the standard free baseline for hourly load. We report ablations over window length, model capacity, positional encoding, and feature set, and compare against a parameter-matched LSTM. Error analysis shows the dominant residual failure mode is systematic under-prediction of sharp demand peaks, a consequence of the squared-error objective rather than of insufficient capacity." },
+  { text: " — the standard free baseline for hourly load. We report ablations over window length, model capacity, positional encoding, and feature set, and compare against a comparably sized LSTM. Error analysis shows the dominant residual failure mode is systematic under-prediction of sharp demand peaks, a pattern that may be related to the squared-error objective." },
 ]));
 
 // ---- 1 Introduction
@@ -247,7 +247,7 @@ children.push(body("This project asks a specific question: does a Transformer's 
 children.push(h2("Contributions"));
 children.push(bullet("An encoder-only Transformer for multivariate one-hour-ahead household load forecasting, implemented in PyTorch with pre-norm encoder layers, sinusoidal positional encoding, and cyclical calendar features."));
 children.push(bullet("Evaluation against three reference forecasters — naive persistence, seasonal naive, and the mean predictor — rather than metrics reported in isolation."));
-children.push(bullet("Ablations over window length, model capacity, positional encoding scheme, and feature set, plus a parameter-matched LSTM control."));
+children.push(bullet("Ablations over window length, model capacity, positional encoding scheme, and feature set, plus a comparably sized LSTM control."));
 children.push(bullet("A reproducible codebase with fixed seeds, per-run history records, a live inference demo, and figures regenerable without the raw dataset."));
 
 // ---- 2 Related work
@@ -299,7 +299,7 @@ children.push(...figure("architecture.png", 6.6,
   "Figure 1: End-to-end architecture. Data preparation (top), the encoder-only Transformer with tensor shapes annotated (middle), an expanded view of a single pre-norm encoder layer, and the evaluation path (bottom)."));
 
 children.push(h2("4.1  Why attention for this problem"));
-children.push(body("In a recurrent model, information from hour 1 of the window reaches the prediction only after passing through 23 sequential state updates, with each step attenuating and mixing the signal. Self-attention connects every pair of positions in a single operation, so the dependency length is constant regardless of separation. This matters for load data because the most informative context is frequently not the immediately preceding hour but the same hour on previous days — a relationship attention can represent directly as a high weight on a distant position."));
+children.push(body("In a recurrent model, information from hour 1 of the window reaches the prediction only after passing through 23 sequential state updates, with each step attenuating and mixing the signal. Self-attention connects every pair of positions in a single operation, so the dependency length is constant regardless of separation. Within our 24-hour input window, useful context may occur far from the most recent hour, including the same hour on the previous day."));
 children.push(body("Attention is permutation-invariant, so ordering must be supplied explicitly. We add fixed sinusoidal positional encodings after the input projection, and ablate this choice against learnable embeddings and against removing positional information entirely."));
 
 children.push(h2("4.2  Layer composition"));
@@ -316,7 +316,7 @@ children.push(table(
     ["Feed-forward dimension", "128", "2× d_model"],
     ["Dropout", "0.1", "Applied in encoder and head"],
     ["Normalization", "Pre-norm", "Stable without warmup [11]"],
-    ["Pooling", "Final time step", "Ablated against mean pooling"],
+    ["Pooling", "Final time step", "Uses the final encoded time step as the sequence summary"],
     ["Optimizer", "Adam, lr 1e-3", "Kingma and Ba [10]"],
     ["Loss", "MSE", "On standardized targets"],
   ],
@@ -327,7 +327,7 @@ children.push(caption("Table 2: Model configuration."));
 // ---- 5 Training
 children.push(h1("5.  Training Procedure"));
 children.push(body("Training minimizes mean squared error on standardized targets using Adam at a learning rate of 1e-3, with gradient-norm clipping at 1.0, a ReduceLROnPlateau schedule that halves the learning rate after three epochs without validation improvement, and early stopping after eight such epochs. The checkpoint with the lowest validation loss is retained for evaluation."));
-children.push(body("Early stopping is not a formality here. Our interim 20-epoch run reached its best validation loss at epoch 9 and then deteriorated monotonically through epoch 20 while training loss continued to fall — a clean separation of the two curves and an unambiguous overfitting signature. The final run behaves as that experience predicted: validation loss bottoms out at 0.3161 at epoch 11, the schedule halves the learning rate as improvement stalls, and training halts at epoch 19 rather than spending eight further epochs overfitting. Figure 2 shows the final run's curves."));
+children.push(body("Early stopping is not a formality here. Our interim 20-epoch run reached its best validation loss at epoch 9 and never improved beyond that point while training loss generally continued to fall — a clean separation of the two curves and an unambiguous overfitting signature. The final run behaves as that experience predicted: validation loss bottoms out at 0.3161 at epoch 11, the schedule halves the learning rate as improvement stalls, and training halts at epoch 19 rather than spending eight further epochs overfitting. Figure 2 shows the final run's curves."));
 
 children.push(...figure("transformer_h1_loss_curve.png", 5.9,
   "Figure 2: Training and validation loss against epoch for the final early-stopped run. Validation loss reaches its minimum at epoch 11 (dashed line); early stopping halts training at epoch 19, once eight epochs pass without improvement."));
@@ -405,7 +405,7 @@ children.push(table(
 ));
 children.push(caption("Table 4: Ablation results. Each study varies one decision against the final configuration, which appears once per study as the shaded row; its numbers are identical everywhere because runs are fully seeded."));
 
-children.push(body("Three results carry the table. The calendar features matter most: removing them costs more RMSE than any architectural change (0.4494 to 0.4617), even though the model could in principle recover the same information from the positional structure of the window. Second, more capacity only hurts — doubling depth or width degrades RMSE while multiplying parameters, confirming that at 34,000 training hours the binding constraint is data, not expressiveness. Third, the Transformer beats the parameter-matched LSTM control (RMSE 0.4494 vs. 0.4579, skill 21.8% vs. 20.3%) — a real but modest margin that is consistent with attention helping most at the event transitions the error analysis identified."));
+children.push(body("Three results carry the table. The calendar features matter most: removing them costs more RMSE than any architectural change (0.4494 to 0.4617), showing that explicit time-of-day and calendar information improves forecasting performance. Second, more capacity only hurts — doubling depth or width degrades RMSE while multiplying parameters, showing that the larger-capacity models we tested did not improve performance with roughly 24,000 training hours. Third, the Transformer beats the comparably sized LSTM control (RMSE 0.4494 vs. 0.4579, skill 21.8% vs. 20.3%) — a real but modest margin that is consistent with attention helping most at the event transitions the error analysis identified."));
 children.push(body("Two smaller observations: extending the window past one daily cycle adds nothing (L = 48 and L = 168 both underperform L = 24), and fixed sinusoidal encodings beat learnable ones, which overfit — the learnable variant adds 320,000 parameters and peaks five epochs earlier. Notably, every configuration in the table still beats persistence by at least 19.6%, so the headline claim is robust to any of these design choices; the ablations tune the margin, not the conclusion."));
 
 // ---- 8 Discussion
@@ -427,12 +427,12 @@ children.push(h2("Future work"));
 children.push(bullet("Quantile or distributional loss. Replacing MSE with a pinball loss over several quantiles would let the model express uncertainty about peaks instead of hedging toward the mean, addressing the dominant error mode directly."));
 children.push(bullet("Exogenous weather inputs. Joining hourly temperature and humidity for Sceaux over the collection period is a tractable extension with a strong prior for improvement."));
 children.push(bullet("Multi-step forecasting. Extending to a 24-hour horizon and reporting error as a function of lead time; the implementation already supports this via the horizon parameter."));
-children.push(bullet("Attention interpretability. Visualizing attention weights would test the hypothesis that the model attends to the same hour on previous days, which motivated the architecture choice."));
+children.push(bullet("Attention interpretability. Visualizing attention weights would help identify which parts of the previous 24 hours contribute most to the forecast."));
 children.push(bullet("Cross-household generalization. Evaluating on a multi-household dataset would establish whether the learned patterns transfer or are specific to this home."));
 
 // ---- 10 Conclusion
 children.push(h1("10.  Conclusion"));
-children.push(body("We implemented an encoder-only Transformer for one-hour-ahead household electricity load forecasting and evaluated it against the reference forecasters that any such model must beat to be worth deploying. On held-out data the model achieves an MAE of 0.3062 kW and an RMSE of 0.4494 kW, reducing RMSE by 21.8% relative to naive persistence. Error analysis shows the remaining error is dominated by systematic under-prediction of demand peaks — a consequence of the squared-error objective rather than of model capacity, and the clearest direction for future work."));
+children.push(body("We implemented an encoder-only Transformer for one-hour-ahead household electricity load forecasting and evaluated it against the reference forecasters that any such model must beat to be worth its complexity. On held-out data the model achieves an MAE of 0.3062 kW and an RMSE of 0.4494 kW, reducing RMSE by 21.8% relative to naive persistence. Error analysis shows the remaining error is dominated by systematic under-prediction of demand peaks, a pattern that may be related to the squared-error objective and is an important direction for future work."));
 
 // ---- References
 children.push(new Paragraph({ children: [new PageBreak()] }));

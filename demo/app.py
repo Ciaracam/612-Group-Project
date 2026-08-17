@@ -227,7 +227,7 @@ with tab_forecast:
         if "load_error" in st.session_state:
             st.caption(f"Details: {st.session_state['load_error']}")
 
-        predictions = load_fallback_predictions()
+        predictions = load_run_predictions(run_name)
         start = st.slider(
             "Test-period window",
             0, max(0, len(predictions) - window_hours), 0, step=24,

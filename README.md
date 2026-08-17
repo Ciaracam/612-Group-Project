@@ -95,15 +95,15 @@ Prints the comparison table, writes `results/transformer_h1_metrics.json` and
 `results/transformer_h1_predictions.csv`, and regenerates every figure in
 `figures/`.
 
-### Reproduce the figures without the dataset
+### Reproduce interim/reference figures without the dataset
 
 ```bash
 python scripts/make_interim_figures.py
 python scripts/make_architecture_diagram.py
 ```
 
-These read the committed predictions in `models/test_predictions.csv`, so they
-work on a fresh clone with no dataset and no GPU.
+The interim figure script uses the committed predictions in `models/test_predictions.csv`,
+while the architecture diagram can be generated without the raw dataset or a GPU.
 
 ### Other experiments
 

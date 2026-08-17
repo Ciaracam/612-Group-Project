@@ -45,7 +45,7 @@ def persistence_forecast(series: np.ndarray, lag: int = 1) -> tuple[np.ndarray, 
 
 
 def mean_forecast(series: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Predict the training-period mean for every hour — the R^2 = 0 reference."""
+    """Predict the evaluation-series mean for every hour — the R^2 = 0 reference."""
     series = np.asarray(series, dtype=float).ravel()
     return series, np.full_like(series, series.mean())
 

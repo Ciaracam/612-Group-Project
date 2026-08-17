@@ -85,19 +85,20 @@ The raw file is 2,075,259 minute-level readings taken over roughly four years.
 Preparation involves five steps, all implemented in `src/data.py`:
 
 1. **Parse and index** — combine the separate date and time columns into a
-   timestamp index, coerce all measurements to numeric, drop duplicate timestamps.
-2. **Resample to hourly means** — minute resolution is noisier than the forecast
-   task needs and 35× more expensive to train on.
-3. **Interpolate** — around 1.25% of rows carry missing values; time-weighted
-   interpolation fills the gaps left after resampling.
-4. **Add calendar features** — hour of day, day of week, and month encoded as
-   sine/cosine pairs, plus a weekend indicator. Sine/cosine encoding keeps hour 23
-   adjacent to hour 0, which an integer encoding would not.
-5. **Split chronologically, then scale** — 70/15/15 by time. `StandardScaler` is
-   fit on the training split only.
+   timestamp index, coerce all measurements to numeric, and drop duplicate timestamps.
+2. **Resample to hourly means** — convert the minute-level series to hourly means,
+   reducing the data from 2.08 million readings to 34,589 hours.
+3. **Add calendar features** — hour of day, day of week, and month encoded as
+   sine/cosine pairs, plus a weekend indicator.
+4. **Split chronologically, then interpolate** — divide the series 70/15/15 by
+   time and fill remaining missing hours independently within each split so values
+   cannot leak across split boundaries.
+5. **Scale** — fit `StandardScaler` on the training split only and use those same
+   statistics to transform validation and test.
 
-The scaling order matters: fitting the scaler before splitting would leak test-set
-statistics into training and inflate the reported result.
+The order matters: interpolation is performed separately within each split, and
+the scalers are fit using training data only. This prevents information from the
+validation or test periods from leaking backward into training.
 """),
     code("""
 from src.data import DataConfig, prepare_data
@@ -227,7 +228,7 @@ We therefore evaluate against three reference forecasters:
 - **Naive persistence** — predict the previous hour. The standard baseline for
   hourly load, and a strong one.
 - **Seasonal naive** — predict the same hour yesterday.
-- **Mean predictor** — predict the training mean. The R² = 0 reference point.
+- **Mean predictor** — predict the test-series mean. The R² = 0 reference point.
 """),
     code("""
 from src.evaluate import main as evaluate_main
@@ -284,8 +285,8 @@ The runner writes `results/ablation_results.csv`.
 
 - The Transformer beats naive persistence by a clear margin on held-out data,
   which is the comparison that matters for this task.
-- Calendar features and early stopping both contribute measurably; see the
-  ablation table.
+- Calendar features helped improve performance in the ablation study, and early
+  stopping made sure we kept the model with the best validation performance.
 - The dominant remaining error is peak under-prediction, an artifact of the
   squared-error objective rather than of model capacity.
 

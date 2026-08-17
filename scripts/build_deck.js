@@ -188,11 +188,11 @@ s = pres.addSlide();
 titleOf(s, "Data Preparation", "UCI Individual Household Electric Power Consumption");
 
 const steps = [
-  ["Clean & index", "Combine date/time into a timestamp index, coerce to numeric, drop duplicate timestamps from DST transitions."],
-  ["Resample hourly", "Minute resolution is noisier than the task needs. Hourly means absorb isolated gaps: 2.08M rows → 34,589 hours."],
-  ["Interpolate", "~1.25% of raw rows have missing values. Time-weighted interpolation fills remaining hours without fragmenting the series."],
-  ["Calendar features", "Hour, day, month as sine/cosine pairs plus weekend flag. Keeps hour 23 adjacent to hour 0. 7 measured + 7 derived = 14."],
-  ["Split, then scale", "70/15/15 chronological. StandardScaler fit on train only — fitting before splitting leaks test statistics."],
+  ["Clean & index", "Combine date/time into a timestamp index, coerce to numeric, and drop duplicate timestamps."],
+  ["Resample hourly", "Convert minute-level readings to hourly means: 2.08M rows → 34,589 hours."],
+  ["Calendar features", "Add sine/cosine encodings of hour, day, and month plus a weekend flag. 7 measured + 7 derived = 14."],
+  ["Split & interpolate", "Split 70/15/15 chronologically, then time-interpolate missing hours independently within each split."],
+  ["Scale", "Fit StandardScaler on training data only; transform validation and test using the training statistics."],
 ];
 steps.forEach((st, i) => {
   numberedCard(s, {
@@ -243,7 +243,7 @@ titleOf(s, "Proposed Solution", "An encoder-only Transformer, and an evaluation 
 
 const solutions = [
   ["Attention over recurrence", "In an LSTM, hour 1 of the window reaches the prediction through 23 sequential state updates. Self-attention connects any two positions in one operation — constant dependency length regardless of separation."],
-  ["Built for the daily cycle", "The most informative context is often the same hour on previous days, not the previous hour. Attention represents that directly as a high weight on a distant position."],
+  ["Built for daily patterns", "Electricity use usually follows some type of daily pattern, so the previous hour is not always the most helpful for predicting what comes next. With a 24-hour window, the model can look back across the full day, including the same hour yesterday."],
   ["Pre-norm encoder layers", "LayerNorm before each sublayer rather than after: better-conditioned gradients at initialisation, no warmup schedule required."],
   ["Falsifiable evaluation", "We report skill against naive persistence, not metrics in isolation. If the model cannot beat repeating the last hour, it is not worth its complexity."],
 ];
@@ -277,11 +277,11 @@ s.addNotes(
   "the prediction only after passing through twenty-three sequential state " +
   "updates, decaying at each step. Attention connects any two hours in one " +
   "step. That matters here because the most informative context is often not " +
-  "the last hour — it's the same hour yesterday, or the same hour last " +
-  "weekend. Attention can put weight directly on those distant positions.\n" +
+  "the last hour. Within our 24-hour window, the model can look back " +
+  "across the full day, including the same hour yesterday.\n" +
   "The second half is the evaluation. We committed upfront to three reference " +
-  "forecasters — persistence, seasonal naive, and the mean — plus an LSTM " +
-  "control with matched parameters, and ablations over every design choice " +
+  "forecasters — persistence, seasonal naive, and the mean, plus a comparably " +
+  "sized LSTM control, and ablations over the main design choices " +
   "you'll see on the architecture slide. The literature is full of Transformer " +
   "results that evaporate against simple baselines — Zeng et al. showed that " +
   "in 2023. So we designed the evaluation to be falsifiable: if attention " +
@@ -299,7 +299,7 @@ const tools = [
   ["pandas + NumPy", "Resampling, time-weighted interpolation, cyclical feature engineering"],
   ["Matplotlib", "All figures generated from one shared styling module"],
   ["Streamlit", "Live inference demo running on CPU"],
-  ["Git + GitHub", "Public repo, pinned requirements, per-run history JSON"],
+  ["Git + GitHub", "Public repo, version-bounded requirements, per-run history JSON"],
 ];
 tools.forEach((t, i) => {
   const x = M + (i % 3) * 4.09;
@@ -321,7 +321,7 @@ s.addNotes(
   "SCRIPT:\n" +
   "Quickly on tooling: PyTorch for the model and training loop, pandas and " +
   "scikit-learn for the pipeline, matplotlib for figures, and Streamlit for " +
-  "the live demo you'll see in a few minutes. Everything is seeded and pinned, " +
+  "the live demo you'll see in a few minutes. Everything is seeded and version-controlled, " +
   "every training run writes a history file, and the whole repo reproduces " +
   "from two commands — train, evaluate."
 );
@@ -360,8 +360,8 @@ s.addNotes(
   "number: next hour's load in standardized units, inverted back to kilowatts " +
   "for every metric you'll see.\n" +
   "Total: sixty-eight thousand trainable parameters. That's small on purpose — " +
-  "with thirty-four thousand training hours, a big model overfits long before " +
-  "it underfits, and the capacity ablation confirms it."
+  "with about twenty-four thousand training hours, our larger model variants performed worse, " +
+  "which the capacity ablation confirms."
 );
 
 // ---------------------------------------------------------------- 7  Training
@@ -574,7 +574,8 @@ s.addText(
   "This is rational under MSE. A confident spike that lands an hour off is punished " +
   "twice — missed peak plus false peak — so hedging toward the mean is optimal " +
   "wherever the data is most volatile.\n\n" +
-  "It is a loss-function artifact, not a capacity failure.",
+  "This pattern may be related to the MSE objective, while our capacity ablations " +
+  "suggest that simply making the model larger does not solve it.",
   { x: 9.14, y: 2.18, w: 3.32, h: 3.6, fontSize: 11.5, color: INK, fontFace: BODY, margin: 0 },
 );
 
@@ -708,7 +709,7 @@ s.addNotes(
   "architecture change. More capacity only hurts — doubling depth or width " +
   "makes things worse, so the constraint is data, not expressiveness, which " +
   "is why our model is deliberately small. And the Transformer does beat a " +
-  "parameter-matched LSTM — 21.8 versus 20.3 percent skill. A real margin, " +
+  "comparably sized LSTM — 21.8 versus 20.3 percent skill. A real margin, " +
   "and an honest one: every configuration in this grid still beats " +
   "persistence by at least 19.6 percent, so the conclusion doesn't hinge on " +
   "any single design choice."
@@ -741,7 +742,7 @@ bullets(s, [
   "Quantile / pinball loss — let the model express uncertainty about peaks instead of hedging",
   "Join hourly weather for Sceaux over the collection period",
   "Multi-step forecasting to 24 hours; the code already supports the horizon parameter",
-  "Visualise attention weights to test whether the model really attends to the same hour on prior days",
+  "Visualize attention weights to see which parts of the previous 24 hours the model relies on most",
   "Evaluate on a multi-household dataset to test transfer",
 ], { x: 7.18, y: 2.42, w: 5.24, h: 4.0, fontSize: 12.5, spaceAfter: 13 });
 

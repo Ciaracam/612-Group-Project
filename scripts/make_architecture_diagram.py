@@ -98,10 +98,10 @@ def main() -> None:
     stage1 = [
         ("Raw UCI file", "2,075,259 rows\n1-minute resolution\n7 measurements", PALE, INK),
         ("Clean & index", "parse datetime\ndrop duplicates\ncoerce to numeric", PALE, INK),
-        ("Hourly resample", "mean per hour\ntime interpolation\n34,589 hours", PALE, INK),
+        ("Hourly resample", "mean per hour\n34,589 hours", PALE, INK),
         ("Calendar features", "cyclical hour / day\nmonth / weekend\n7 physical + 7 derived", PALE, INK),
-        ("Split & scale", "70 / 15 / 15 chronological\nStandardScaler\nfit on train only", PALE, INK),
-        ("Sliding windows", "L = 24 hours\nstride 1\nhorizon H", PALE_TEAL, TEAL),
+        ("Split & interpolate", "70 / 15 / 15 chronological\ntime interpolation\nwithin each split", PALE, INK),
+        ("Scale & windows", "scalers fit on train only\nL = 24 hours\nstride 1 · horizon H", PALE_TEAL, TEAL),
     ]
     for i, (title, sub, face, edge) in enumerate(stage1):
         x = 2 + i * (w + gap)
