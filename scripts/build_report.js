@@ -451,6 +451,17 @@ const REFERENCES = [
   "[10]  D. P. Kingma and J. Ba, \"Adam: A method for stochastic optimization,\" in Proc. International Conference on Learning Representations (ICLR), 2015.",
   "[11]  R. Xiong, Y. Yang, D. He, K. Zheng, S. Zheng, C. Xing, H. Zhang, Y. Lan, L. Wang, and T.-Y. Liu, \"On layer normalization in the transformer architecture,\" in Proc. International Conference on Machine Learning (ICML), 2020, pp. 10524–10533.",
   "[12]  Y. Nie, N. H. Nguyen, P. Sinthong, and J. Kalagnanam, \"A time series is worth 64 words: Long-term forecasting with transformers,\" in Proc. International Conference on Learning Representations (ICLR), 2023.",
+  "[13]  D. L. Marino, K. Amarasinghe, and M. Manic, \"Building energy load forecasting using deep neural networks,\" in Proc. 42nd Annual Conference of the IEEE Industrial Electronics Society (IECON), 2016, pp. 7046–7051.",
+  "[14]  T.-Y. Kim and S.-B. Cho, \"Predicting residential energy consumption using CNN-LSTM neural networks,\" Energy, vol. 182, pp. 72–81, 2019.",
+  "[15]  D. Salinas, V. Flunkert, J. Gasthaus, and T. Januschowski, \"DeepAR: Probabilistic forecasting with autoregressive recurrent networks,\" International Journal of Forecasting, vol. 36, no. 3, pp. 1181–1191, 2020.",
+  "[16]  T. Hong and S. Fan, \"Probabilistic electric load forecasting: A tutorial review,\" International Journal of Forecasting, vol. 32, no. 3, pp. 914–938, 2016.",
+  "[17]  J. L. Ba, J. R. Kiros, and G. E. Hinton, \"Layer normalization,\" arXiv preprint arXiv:1607.06450, 2016.",
+  "[18]  N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and R. Salakhutdinov, \"Dropout: A simple way to prevent neural networks from overfitting,\" Journal of Machine Learning Research, vol. 15, pp. 1929–1958, 2014.",
+  "[19]  R. Koenker and G. Bassett, Jr., \"Regression quantiles,\" Econometrica, vol. 46, no. 1, pp. 33–50, 1978.",
+  "[20]  R. Wen, K. Torkkola, B. Narayanaswamy, and D. Madeka, \"A multi-horizon quantile recurrent forecaster,\" arXiv preprint arXiv:1711.11053, 2017.",
+  "[21]  T. Hong, P. Pinson, S. Fan, H. Zareipour, A. Troccoli, and R. J. Hyndman, \"Probabilistic energy forecasting: Global Energy Forecasting Competition 2014 and beyond,\" International Journal of Forecasting, vol. 32, no. 3, pp. 896–913, 2016.",
+  "[22]  S. Makridakis, E. Spiliotis, and V. Assimakopoulos, \"The M4 Competition: 100,000 time series and 61 forecasting methods,\" International Journal of Forecasting, vol. 36, no. 1, pp. 54–74, 2020.",
+  "[23]  A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, Z. Lin, N. Gimelshein, L. Antiga, A. Desmaison, A. Köpf, E. Yang, Z. DeVito, M. Raison, A. Tejani, S. Chilamkurthy, B. Steiner, L. Fang, J. Bai, and S. Chintala, \"PyTorch: An imperative style, high-performance deep learning library,\" in Advances in Neural Information Processing Systems 32 (NeurIPS), 2019, pp. 8026–8037.",
 ];
 REFERENCES.forEach((r) => children.push(ref(r)));
 
